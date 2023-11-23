@@ -1,0 +1,4 @@
+﻿CREATE SEQUENCE [Application].[sq_Team]
+    AS INT
+    START WITH 38187
+    INCREMENT BY 1;

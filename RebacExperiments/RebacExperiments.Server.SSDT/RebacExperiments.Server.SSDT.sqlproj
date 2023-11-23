@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Name>RbacExperiments.Server.SSDT</Name>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>4.1</ProjectVersion>
+    <ProjectGuid>{ff88dd79-aba3-43de-8903-e70a63942d13}</ProjectGuid>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql160DatabaseSchemaProvider</DSP>
+    <OutputType>Database</OutputType>
+    <RootPath />
+    <RootNamespace>RbacExperiments.SSDT</RootNamespace>
+    <AssemblyName>RbacExperiments.SSDT</AssemblyName>
+    <ModelCollation>1033, CI</ModelCollation>
+    <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
+    <DeployToDatabase>True</DeployToDatabase>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetLanguage>CS</TargetLanguage>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <SqlServerVerification>False</SqlServerVerification>
+    <IncludeCompositeObjects>True</IncludeCompositeObjects>
+    <TargetDatabaseSet>True</TargetDatabaseSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
+    <SSDTExists Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets')">True</SSDTExists>
+    <VisualStudioVersion Condition="'$(SSDTExists)' == ''">11.0</VisualStudioVersion>
+  </PropertyGroup>
+  <Import Condition="'$(SQLDBExtensionsRefPath)' != ''" Project="$(SQLDBExtensionsRefPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <ItemGroup>
+    <Folder Include="Properties" />
+    <Folder Include="Application" />
+    <Folder Include="Application\Indexes" />
+    <Folder Include="Application\Sequences" />
+    <Folder Include="Application\Stored Procedures" />
+    <Folder Include="Application\Tables" />
+    <Folder Include="Scripts" />
+    <Folder Include="Scripts\Application" />
+    <Folder Include="Scripts\Identity" />
+    <Folder Include="Identity" />
+    <Folder Include="Identity\Indexes" />
+    <Folder Include="Identity\Sequences" />
+    <Folder Include="Identity\Stored Procedures" />
+    <Folder Include="Identity\Tables" />
+    <Folder Include="Identity\Functions" />
+  </ItemGroup>
+  <ItemGroup>
+    <PostDeploy Include="Scripts\Script.PostDeployment1.sql" />
+    <Build Include="Identity\Indexes\UX_User_LogonName.sql" />
+    <Build Include="Identity\Sequences\sq_User.sql" />
+    <Build Include="Identity\Stored Procedures\usp_TemporalTables_DeactivateTemporalTables.sql" />
+    <Build Include="Identity\Stored Procedures\usp_TemporalTables_ReactivateTemporalTables.sql" />
+    <Build Include="Identity\Identity.sql" />
+    <Build Include="Identity\Sequences\sq_RelationTuple.sql" />
+    <Build Include="Identity\Functions\tvf_RelationTuples_ListObjects.sql" />
+    <Build Include="Identity\Functions\udf_RelationTuples_Check.sql" />
+    <Build Include="Identity\Tables\RelationTuple.sql" />
+    <Build Include="Application\Tables\UserTask.sql" />
+    <Build Include="Application\Tables\UserTaskPriority.sql" />
+    <Build Include="Application\Tables\UserTaskStatus.sql" />
+    <Build Include="Application\Sequences\sq_UserTask.sql" />
+    <Build Include="Application\Stored Procedures\usp_TemporalTables_DeactivateTemporalTables.sql" />
+    <Build Include="Application\Stored Procedures\usp_TemporalTables_ReactivateTemporalTables.sql" />
+    <Build Include="Application\Application.sql" />
+    <Build Include="Application\Indexes\UX_Application_UserTaskStatus_Name.sql" />
+    <Build Include="Application\Indexes\UX_Application_UserTaskPriority_Name.sql" />
+    <None Include="Scripts\Application\pds-100-ins-application-task-priority.sql" />
+    <None Include="Scripts\Application\pds-110-ins-application-task-status.sql" />
+    <Build Include="Identity\Indexes\UX_RelationTuple_UniqueObjectSubjectRelation.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Scripts\Identity\pds-120-ins-identity-relation-tuples.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Scripts\Application\pds-120-ins-application-user-task.sql" />
+    <Build Include="Application\Tables\Organization.sql" />
+    <Build Include="Application\Sequences\sq_Organization.sql" />
+    <None Include="Scripts\Application\pds-130-ins-application-organization.sql" />
+    <Build Include="Application\Tables\Team.sql" />
+    <Build Include="Application\Sequences\sq_Team.sql" />
+    <None Include="Scripts\Application\pds-140-ins-application-team.sql" />
+    <Build Include="Identity\Tables\User.sql" />
+    <None Include="Scripts\Identity\pds-100-ins-identity-users.sql" />
+    <Build Include="Identity\Tables\Role.sql" />
+    <Build Include="Identity\Sequences\sq_Role.sql" />
+    <None Include="Scripts\Identity\pds-110-ins-identity-roles.sql" />
+    <Build Include="Identity\Indexes\UX_Role_Name.sql" />
+  </ItemGroup>
+</Project>

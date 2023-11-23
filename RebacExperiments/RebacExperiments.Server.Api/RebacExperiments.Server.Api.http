@@ -1,0 +1,79 @@
+﻿@RebacExperiments.Server.Api_HostAddress = https://localhost:5000
+
+### Sign In "philipp@bytefish.de"
+
+POST {{RebacExperiments.Server.Api_HostAddress}}/Authentication/sign-in
+Content-Type: application/json
+
+{
+  "username": "philipp@bytefish.de",
+  "password": "5!F25GbKwU3P",
+  "rememberMe": true
+}
+
+### Get all UserTasks for "philipp@bytefish.de"
+
+GET {{RebacExperiments.Server.Api_HostAddress}}/UserTasks
+
+### Sign Out "philipp@bytefish.de"
+
+POST {{RebacExperiments.Server.Api_HostAddress}}/Authentication/sign-out
+
+### Check for 401 Unauthorized when not Authenticated
+
+GET {{RebacExperiments.Server.Api_HostAddress}}/UserTasks
+
+### Sign In as "max@mustermann.local"
+
+POST {{RebacExperiments.Server.Api_HostAddress}}/Authentication/sign-in
+Content-Type: application/json
+
+{
+  "username": "max@mustermann.local",
+  "password": "5!F25GbKwU3P",
+  "rememberMe": true
+}
+
+### Get all UserTasks for "max@mustermann.local"
+
+GET {{RebacExperiments.Server.Api_HostAddress}}/UserTasks
+
+### Create a new UserTask "API HTTP File Example" as "max@mustermann.local"
+
+POST {{RebacExperiments.Server.Api_HostAddress}}/UserTasks
+Content-Type: application/json
+
+{
+    "title": "API HTTP File Example",
+    "description": "API HTTP File Example",
+    "dueDateTime": null,
+    "reminderDateTime": null,
+    "completedDateTime": null,
+    "assignedTo": null,
+    "userTaskPriority": 2,
+    "userTaskStatus": 2
+}
+
+### Sign In "philipp@bytefish.de"
+
+POST {{RebacExperiments.Server.Api_HostAddress}}/Authentication/sign-in
+Content-Type: application/json
+
+{
+  "username": "philipp@bytefish.de",
+  "password": "5!F25GbKwU3P",
+  "rememberMe": true
+}
+
+### Get all UserTasks for "philipp@bytefish.de"
+
+GET {{RebacExperiments.Server.Api_HostAddress}}/UserTasks
+
+### Delete UserTask 152 as "max@mustermann.local" (he is not the owner)
+DELETE {{RebacExperiments.Server.Api_HostAddress}}/UserTasks/152
+
+### Get all UserTasks
+
+GET {{RebacExperiments.Server.Api_HostAddress}}/UserTasks
+
+### Your own examples here ...
