@@ -23,7 +23,6 @@ namespace RebacExperiments.Acl
 
         private class Builder : UsersetRewriteBaseVisitor<UsersetExpression>
         {
-
             public override UsersetExpression VisitNamespace([NotNull] UsersetRewriteParser.NamespaceContext context)
             {
                 return new NamespaceUsersetExpression
@@ -48,17 +47,97 @@ namespace RebacExperiments.Acl
 
             public override UsersetExpression VisitUsersetRewrite([NotNull] UsersetRewriteParser.UsersetRewriteContext context)
             {
-                return base.VisitUsersetRewrite(context);
+                if(context.userset() == null)
+                {
+                    return new ChildUsersetExpression { Userset = new ThisUsersetExpression() };
+                }
+
+                return VisitUserset(context.userset());
             }
 
             public override UsersetExpression VisitChildUserset([NotNull] UsersetRewriteParser.ChildUsersetContext context)
             {
-                return base.VisitChildUserset(context);
+                return new ChildUsersetExpression
+                {
+                    Userset = VisitUserset(context.userset())
+                };
             }
 
             public override UsersetExpression VisitComputedUserset([NotNull] UsersetRewriteParser.ComputedUsersetContext context)
             {
-                return base.VisitComputedUserset(context);
+                string? @namespace = null;
+
+                if (context.usersetNamespaceRef().Length > 1)
+                {
+                    throw new InvalidOperationException("More than one namespace specified"); //TODO: figure out which exception to throw
+                }
+
+                if (context.usersetNamespaceRef().Any())
+                {
+                    var usersetNamespaceRefContext = context.usersetNamespaceRef().First();
+
+                    switch (usersetNamespaceRefContext.@ref.Type)
+                    {
+                        case UsersetRewriteParser.STRING:
+                            @namespace = Unquote(usersetNamespaceRefContext.STRING().GetText());
+                            break;
+
+                        case UsersetRewriteParser.TUPLE_USERSET_NAMESPACE:
+                            @namespace = UsersetRef.TUPLE_USERSET_NAMESPACE;
+                            break;
+                    }
+                }
+
+                string? @object = null;
+
+                if (context.usersetObjectRef().Length > 1)
+                {
+                    throw new InvalidOperationException("More than one object specified"); //TODO: figure out which exception to throw
+                }
+
+                if (context.usersetObjectRef().Any())
+                {
+                    var usersetObjectRefContext = context.usersetObjectRef().First();
+
+                    switch (usersetObjectRefContext.@ref.Type)
+                    {
+                        case UsersetRewriteParser.STRING:
+                            @object = Unquote(usersetObjectRefContext.STRING().GetText());
+                            break;
+
+                        case UsersetRewriteParser.TUPLE_USERSET_OBJECT:
+                            @object = UsersetRef.TUPLE_USERSET_OBJECT;
+                            break;
+                    }
+                }
+
+                string relation = string.Empty;
+
+                if (context.usersetRelationRef().Length > 1)
+                {
+                    throw new InvalidOperationException("More than one relation specified"); //TODO: figure out which exception to throw
+                }
+                if (context.usersetRelationRef().Any())
+                {
+                    var usersetRelationRefContext = context.usersetRelationRef().First();
+                    switch (usersetRelationRefContext.@ref.Type)
+                    {
+                        case UsersetRewriteParser.STRING:
+                            relation = Unquote(usersetRelationRefContext.STRING().GetText());
+                            break;
+
+                        case UsersetRewriteParser.TUPLE_USERSET_RELATION:
+                            relation = UsersetRef.TUPLE_USERSET_RELATION;
+                            break;
+                    }
+                }
+
+                return new ComputedUsersetExpression
+                {
+                    Namespace = @namespace,
+                    Object = @object,
+                    Relation = relation
+                };
             }
 
             public override UsersetExpression VisitNamespaceRef([NotNull] UsersetRewriteParser.NamespaceRefContext context)
@@ -79,22 +158,90 @@ namespace RebacExperiments.Acl
 
             public override UsersetExpression VisitSetOperationUserset([NotNull] UsersetRewriteParser.SetOperationUsersetContext context)
             {
-                return base.VisitSetOperationUserset(context);
+                SetOperationEnum op;
+
+                switch (context.op.Type)
+                {
+                    case UsersetRewriteParser.UNION:
+                        op = SetOperationEnum.Union;
+                        break;
+                    case UsersetRewriteParser.INTERSECT:
+                        op = SetOperationEnum.Intersect;
+                        break;
+                    case UsersetRewriteParser.EXCLUDE:
+                        op = SetOperationEnum.Exclude;
+                        break;
+                    default:
+                        throw new ArgumentException(nameof(op));
+                }
+
+                return new SetOperationUsersetExpression
+                {
+                    Operation = op,
+                    Children = context.userset()
+                        .Select(x => x.Accept(this))
+                        .ToList()
+                };
             }
 
             public override UsersetExpression VisitThisUserset([NotNull] UsersetRewriteParser.ThisUsersetContext context)
             {
-                return base.VisitThisUserset(context);
+                return new ThisUsersetExpression();
             }
 
             public override UsersetExpression VisitTupleset([NotNull] UsersetRewriteParser.TuplesetContext context)
             {
-                return base.VisitTupleset(context);
+                string? @namespace = null;
+
+                if (context.namespaceRef().Length > 1) 
+                {
+                    throw new InvalidOperationException("More than one namespace specified"); //TODO: figure out which exception to throw
+                }
+
+                if (context.namespaceRef().Any())
+                {
+                    @namespace = Unquote(context.namespaceRef().First().@ref.Text);
+                }
+                
+                string? @object = null;
+
+                if (context.objectRef().Length > 1)
+                {
+                    throw new InvalidOperationException("More than one object specified"); //TODO: figure out which exception to throw
+                }
+
+                if (context.objectRef().Any())
+                {
+                    @object = Unquote(context.objectRef().First().@ref.Text);
+                }
+                
+                string relation = string.Empty;
+                
+                if (context.relationRef().Length > 1)
+                {
+                    throw new InvalidOperationException("More than one relation specified"); //TODO: figure out which exception to throw
+                }
+                
+                if (context.relationRef().Any())
+                {
+                    relation = Unquote(context.relationRef().First().@ref.Text);
+                }
+
+                return new TuplesetExpression
+                {
+                    Namespace = @namespace,
+                    Object = @object,
+                    Relation = relation
+                };
             }
 
             public override UsersetExpression VisitTupleToUserset([NotNull] UsersetRewriteParser.TupleToUsersetContext context)
             {
-                return base.VisitTupleToUserset(context);
+                return new TupleToUsersetExpression
+                {
+                    TuplesetExpression = (TuplesetExpression)VisitTupleset(context.tupleset()),
+                    ComputedUsersetExpression = (ComputedUsersetExpression)VisitComputedUserset(context.computedUserset())
+                };
             }
 
             public override UsersetExpression VisitUserset([NotNull] UsersetRewriteParser.UsersetContext context)

@@ -8,6 +8,11 @@
     public class ComputedUsersetExpression : UsersetExpression
     {
         /// <summary>
+        /// Gets or sets the Namespace.
+        /// </summary>
+        public string? Namespace { get; set; }
+
+        /// <summary>
         /// Gets or sets the Object,
         /// </summary>
         public string? Object { get; set; }
