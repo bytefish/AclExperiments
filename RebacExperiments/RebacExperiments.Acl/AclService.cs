@@ -1,4 +1,4 @@
-﻿using RebacExperiments.Acl.Model.Rewrite;
+﻿using RebacExperiments.Acl.Model;
 
 namespace RebacExperiments.Acl
 {

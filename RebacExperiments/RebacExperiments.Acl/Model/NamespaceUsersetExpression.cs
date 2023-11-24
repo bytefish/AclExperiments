@@ -1,4 +1,4 @@
-﻿namespace RebacExperiments.Server.Api.Infrastructure.Acl.Rewrite
+﻿namespace RebacExperiments.Acl.Model
 {
     /// <summary>
     /// The root node of the Zanzibar Configuration language. It contains the 

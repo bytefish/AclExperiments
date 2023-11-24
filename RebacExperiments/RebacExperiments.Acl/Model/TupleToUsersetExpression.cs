@@ -1,4 +1,4 @@
-﻿namespace RebacExperiments.Acl.Model.Rewrite
+﻿namespace RebacExperiments.Acl.Model
 {
     /// <summary>
     ///  Computes a tupleset (§2.4.1) from the input object, fetches relation tuples matching the tupleset, and computes 

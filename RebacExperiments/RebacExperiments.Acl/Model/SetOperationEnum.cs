@@ -1,4 +1,4 @@
-﻿namespace RebacExperiments.Server.Api.Infrastructure.Acl.Rewrite
+﻿namespace RebacExperiments.Acl.Model
 {
     /// <summary>
     /// The Set Operation to apply for a <see cref="UsersetExpression"/>.

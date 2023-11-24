@@ -1,4 +1,4 @@
-﻿namespace RebacExperiments.Acl.Model.Rewrite
+﻿namespace RebacExperiments.Acl.Model
 {
     /// <summary>
     /// Each tupleset specifies keys of a set of relation tuples. The set can include a single tuple key, or 

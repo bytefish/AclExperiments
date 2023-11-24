@@ -1,4 +1,4 @@
-﻿namespace RebacExperiments.Server.Api.Infrastructure.Acl.Rewrite
+﻿namespace RebacExperiments.Acl.Model
 {
     /// <summary>
     /// A Leaf Node of a <see cref="SetOperationUsersetExpression"/>.

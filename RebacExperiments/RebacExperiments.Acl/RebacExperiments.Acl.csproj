@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Antlr4\" />
+    <Folder Include="Ast\Generated\" />
   </ItemGroup>
 
 </Project>

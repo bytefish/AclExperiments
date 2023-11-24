@@ -1,4 +1,4 @@
-﻿namespace RebacExperiments.Server.Api.Infrastructure.Acl.Rewrite
+﻿namespace RebacExperiments.Acl.Model
 {
     /// <summary>
     /// Returns all users from stored relation tuples for the <code>object#relation</code> pair, including 

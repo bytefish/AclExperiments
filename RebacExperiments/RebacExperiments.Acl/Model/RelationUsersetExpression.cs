@@ -1,4 +1,4 @@
-﻿namespace RebacExperiments.Acl.Model.Rewrite
+﻿namespace RebacExperiments.Acl.Model
 {
     /// <summary>
     /// A Relation is expressed by its name and an optional rewrite, which is expressed as a 

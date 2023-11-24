@@ -1,4 +1,4 @@
-﻿namespace RebacExperiments.Server.Api.Infrastructure.Acl.Rewrite
+﻿namespace RebacExperiments.Acl.Model
 {
     public static class UsersetRef
     {

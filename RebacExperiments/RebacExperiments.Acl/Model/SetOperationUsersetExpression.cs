@@ -1,4 +1,4 @@
-﻿namespace RebacExperiments.Server.Api.Infrastructure.Acl.Rewrite
+﻿namespace RebacExperiments.Acl.Model
 {
     /// <summary>
     /// Userset Expressions can be expressed as a union, intersection, ... and more 
