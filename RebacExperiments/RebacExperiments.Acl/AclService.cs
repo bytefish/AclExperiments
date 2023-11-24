@@ -1,7 +1,6 @@
-﻿using RebacExperiments.Server.Api.Infrastructure.Acl.Rewrite;
-using RebacExperiments.Server.Api.Infrastructure.Constants;
+﻿using RebacExperiments.Acl.Model.Rewrite;
 
-namespace RebacExperiments.Server.Api.Infrastructure.Acl
+namespace RebacExperiments.Acl
 {
     public class AclService
     {

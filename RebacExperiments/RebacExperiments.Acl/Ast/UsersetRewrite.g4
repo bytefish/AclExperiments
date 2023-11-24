@@ -1,5 +1,8 @@
 grammar UsersetRewrite;
 
+@parser::header {#pragma warning disable 3021}
+@lexer::header {#pragma warning disable 3021}
+
 namespace
     : 'name' ':' namespaceName=STRING relation* EOF
     ;

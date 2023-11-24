@@ -1,4 +1,4 @@
-﻿namespace RebacExperiments.Server.Api.Infrastructure.Acl
+﻿namespace RebacExperiments.Acl
 {
     /// <summary>
     /// A Tuple in the Database.
@@ -48,8 +48,8 @@
 
         public bool Match(AclKey other)
         {
-            return (Namespace == null || Namespace.Equals(other.Namespace)) 
-                && (Id == null || Id.Equals(other.Id)) 
+            return (Namespace == null || Namespace.Equals(other.Namespace))
+                && (Id == null || Id.Equals(other.Id))
                 && (Relation == null || Relation.Equals(other.Relation));
         }
     }
