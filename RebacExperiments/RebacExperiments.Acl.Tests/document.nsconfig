@@ -1,0 +1,24 @@
+﻿name: "doc"
+    relation { name: "owner" }
+    
+    relation {
+        name: "editor"
+        userset_rewrite {
+            union {
+                child { _this {} }
+                child { computed_userset { relation: "owner" } }
+            } } }
+    
+    relation {
+        name: "viewer"
+        userset_rewrite {
+            union {
+                child { _this {} }
+                child { computed_userset { relation: "editor" } }
+                child { tuple_to_userset {
+                    tupleset { relation: "parent" }
+                    computed_userset {
+                        object: $TUPLE_USERSET_OBJECT
+                        relation: "viewer"
+                } } }
+} } }

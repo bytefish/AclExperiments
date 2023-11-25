@@ -16,7 +16,7 @@ namespace RebacExperiments.Acl
 
         private static NamespaceUsersetExpression Parse(ICharStream input)
         {
-            UsersetRewriteParser parser = new UsersetRewriteParser(new CommonTokenStream(new UsersetRewriteLexer(input)));
+            var parser = new UsersetRewriteParser(new CommonTokenStream(new UsersetRewriteLexer(input)));
 
             return (NamespaceUsersetExpression)new Builder().Visit(parser.@namespace());
         }
@@ -72,7 +72,7 @@ namespace RebacExperiments.Acl
                     throw new InvalidOperationException("More than one namespace specified"); //TODO: figure out which exception to throw
                 }
 
-                if (context.usersetNamespaceRef().Any())
+                if (context.usersetNamespaceRef().Length != 0)
                 {
                     var usersetNamespaceRefContext = context.usersetNamespaceRef().First();
 
@@ -95,7 +95,7 @@ namespace RebacExperiments.Acl
                     throw new InvalidOperationException("More than one object specified"); //TODO: figure out which exception to throw
                 }
 
-                if (context.usersetObjectRef().Any())
+                if (context.usersetObjectRef().Length != 0)
                 {
                     var usersetObjectRefContext = context.usersetObjectRef().First();
 
@@ -117,7 +117,7 @@ namespace RebacExperiments.Acl
                 {
                     throw new InvalidOperationException("More than one relation specified"); //TODO: figure out which exception to throw
                 }
-                if (context.usersetRelationRef().Any())
+                if (context.usersetRelationRef().Length != 0)
                 {
                     var usersetRelationRefContext = context.usersetRelationRef().First();
                     switch (usersetRelationRefContext.@ref.Type)
@@ -158,23 +158,13 @@ namespace RebacExperiments.Acl
 
             public override UsersetExpression VisitSetOperationUserset([NotNull] UsersetRewriteParser.SetOperationUsersetContext context)
             {
-                SetOperationEnum op;
-
-                switch (context.op.Type)
+                var op = context.op.Type switch
                 {
-                    case UsersetRewriteParser.UNION:
-                        op = SetOperationEnum.Union;
-                        break;
-                    case UsersetRewriteParser.INTERSECT:
-                        op = SetOperationEnum.Intersect;
-                        break;
-                    case UsersetRewriteParser.EXCLUDE:
-                        op = SetOperationEnum.Exclude;
-                        break;
-                    default:
-                        throw new ArgumentException(nameof(op));
-                }
-
+                    UsersetRewriteParser.UNION => SetOperationEnum.Union,
+                    UsersetRewriteParser.INTERSECT => SetOperationEnum.Intersect,
+                    UsersetRewriteParser.EXCLUDE => SetOperationEnum.Exclude,
+                    _ => throw new ArgumentException(nameof(context.op.Type)),
+                };
                 return new SetOperationUsersetExpression
                 {
                     Operation = op,
@@ -198,7 +188,7 @@ namespace RebacExperiments.Acl
                     throw new InvalidOperationException("More than one namespace specified"); //TODO: figure out which exception to throw
                 }
 
-                if (context.namespaceRef().Any())
+                if (context.namespaceRef().Length != 0)
                 {
                     @namespace = Unquote(context.namespaceRef().First().@ref.Text);
                 }
@@ -210,7 +200,7 @@ namespace RebacExperiments.Acl
                     throw new InvalidOperationException("More than one object specified"); //TODO: figure out which exception to throw
                 }
 
-                if (context.objectRef().Any())
+                if (context.objectRef().Length != 0)
                 {
                     @object = Unquote(context.objectRef().First().@ref.Text);
                 }
@@ -222,7 +212,7 @@ namespace RebacExperiments.Acl
                     throw new InvalidOperationException("More than one relation specified"); //TODO: figure out which exception to throw
                 }
                 
-                if (context.relationRef().Any())
+                if (context.relationRef().Length != 0)
                 {
                     relation = Unquote(context.relationRef().First().@ref.Text);
                 }

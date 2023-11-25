@@ -10,11 +10,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="example_acl.txt" />
+    <None Remove="document.nsconfig" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="example_acl.txt">
+    <Content Include="document.nsconfig">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

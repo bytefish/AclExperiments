@@ -7,12 +7,12 @@ namespace RebacExperiments.Acl
         /// <summary>
         /// Namespace Configurations for all Entities.
         /// </summary>
-        private readonly Dictionary<string, NamespaceUsersetExpression> _namespaces = new();
+        private readonly Dictionary<string, NamespaceUsersetExpression> _namespaces = [];
 
         /// <summary>
         /// Set of Relations.
         /// </summary>
-        private readonly HashSet<AclRelation> _relations = new HashSet<AclRelation>();
+        private readonly HashSet<AclRelation> _relations = [];
 
 
         public void AddNamespaceConfiguration(NamespaceUsersetExpression namespaceUsersetExpression)
@@ -27,12 +27,12 @@ namespace RebacExperiments.Acl
 
         public NamespaceUsersetExpression GetNamespaceConfiguration(string name)
         {
-            if (!_namespaces.ContainsKey(name))
+            if (!_namespaces.TryGetValue(name, out NamespaceUsersetExpression? value))
             {
                 throw new InvalidOperationException($"No Namespace Configuration '{name}'");
             }
 
-            return _namespaces[name];
+            return value;
         }
 
         /// <summary>
@@ -47,12 +47,12 @@ namespace RebacExperiments.Acl
                 .ToHashSet();
         }
 
-        public void addRelation(AclRelation relation)
+        public void AddRelation(AclRelation relation)
         {
             _relations.Add(relation);
         }
 
-        public void removeRelation(AclRelation relation)
+        public void RemoveRelation(AclRelation relation)
         {
             _relations.Remove(relation);
         }
