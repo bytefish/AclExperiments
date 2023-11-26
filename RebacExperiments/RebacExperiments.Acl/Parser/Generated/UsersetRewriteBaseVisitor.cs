@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from C:/Users/philipp/source/repos/bytefish/AclExperiments//RebacExperiments/RebacExperiments.Acl/Ast/UsersetRewrite.g4 by ANTLR 4.13.1
+// Generated from C:/Users/philipp/source/repos/bytefish/AclExperiments//RebacExperiments/RebacExperiments.Acl/Parser/UsersetRewrite.g4 by ANTLR 4.13.1
 
 // Unreachable code detected
 #pragma warning disable 0162
@@ -19,7 +19,8 @@
 // Ambiguous reference in cref attribute
 #pragma warning disable 419
 
-namespace RebacExperiments.Acl.Ast.Generated {
+namespace RebacExperiments.Acl.Parser.Generated {
+#pragma warning disable 3021
 using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;
 using IToken = Antlr4.Runtime.IToken;
@@ -196,4 +197,4 @@ public partial class UsersetRewriteBaseVisitor<Result> : AbstractParseTreeVisito
 	/// <return>The visitor result.</return>
 	public virtual Result VisitSetOperationUserset([NotNull] UsersetRewriteParser.SetOperationUsersetContext context) { return VisitChildren(context); }
 }
-} // namespace RebacExperiments.Acl.Ast.Generated
+} // namespace RebacExperiments.Acl.Parser.Generated

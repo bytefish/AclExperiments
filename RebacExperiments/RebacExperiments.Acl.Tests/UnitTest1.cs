@@ -1,4 +1,5 @@
 using RebacExperiments.Acl.Model;
+using RebacExperiments.Acl.Parser;
 
 namespace RebacExperiments.Acl.Tests
 {
@@ -63,7 +64,7 @@ namespace RebacExperiments.Acl.Tests
 
             var a = File.ReadAllText("document.nsconfig");
 
-            var result = NamespaceConfigurationParser.Parse(a);
+            var result = NamespaceUsersetRewriteParser.Parse(a);
         }
     }
 }

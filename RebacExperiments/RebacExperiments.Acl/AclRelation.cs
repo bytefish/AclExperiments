@@ -35,6 +35,7 @@
             AclKey user = AclKey.Parse(split[1]);
 
             bool isUserId = user.Namespace == null && user.Id != null && user.Relation == null;
+
             bool isUserset = user.Namespace != null && user.Id != null && user.Relation != null;
 
             if (isUserId || isUserset)

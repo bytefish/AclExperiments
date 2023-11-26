@@ -1,11 +1,12 @@
 ﻿using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
-using RebacExperiments.Acl.Ast.Generated;
 using RebacExperiments.Acl.Model;
+using RebacExperiments.Acl.Parser.Generated;
+using static RebacExperiments.Acl.Parser.Generated.UsersetRewriteParser;
 
-namespace RebacExperiments.Acl
+namespace RebacExperiments.Acl.Parser
 {
-    public class NamespaceConfigurationParser
+    public class NamespaceUsersetRewriteParser
     {
         public static NamespaceUsersetExpression Parse(string text)
         {
@@ -23,11 +24,10 @@ namespace RebacExperiments.Acl
 
         private class Builder : UsersetRewriteBaseVisitor<UsersetExpression>
         {
-            public override UsersetExpression VisitNamespace([NotNull] UsersetRewriteParser.NamespaceContext context)
+            public override UsersetExpression VisitNamespace([NotNull] NamespaceContext context)
             {
                 return new NamespaceUsersetExpression
                 {
-
                     Name = Unquote(context.namespaceName.Text),
                     Relations = context.relation()
                         .Select(VisitRelation)
@@ -36,7 +36,7 @@ namespace RebacExperiments.Acl
                 };
             }
 
-            public override UsersetExpression VisitRelation([NotNull] UsersetRewriteParser.RelationContext context)
+            public override UsersetExpression VisitRelation([NotNull] RelationContext context)
             {
                 return new RelationUsersetExpression
                 {
@@ -45,9 +45,9 @@ namespace RebacExperiments.Acl
                 };
             }
 
-            public override UsersetExpression VisitUsersetRewrite([NotNull] UsersetRewriteParser.UsersetRewriteContext context)
+            public override UsersetExpression VisitUsersetRewrite([NotNull] UsersetRewriteContext context)
             {
-                if(context.userset() == null)
+                if (context.userset() == null)
                 {
                     return new ChildUsersetExpression { Userset = new ThisUsersetExpression() };
                 }
@@ -55,7 +55,7 @@ namespace RebacExperiments.Acl
                 return VisitUserset(context.userset());
             }
 
-            public override UsersetExpression VisitChildUserset([NotNull] UsersetRewriteParser.ChildUsersetContext context)
+            public override UsersetExpression VisitChildUserset([NotNull] ChildUsersetContext context)
             {
                 return new ChildUsersetExpression
                 {
@@ -63,7 +63,7 @@ namespace RebacExperiments.Acl
                 };
             }
 
-            public override UsersetExpression VisitComputedUserset([NotNull] UsersetRewriteParser.ComputedUsersetContext context)
+            public override UsersetExpression VisitComputedUserset([NotNull] ComputedUsersetContext context)
             {
                 string? @namespace = null;
 
@@ -78,11 +78,11 @@ namespace RebacExperiments.Acl
 
                     switch (usersetNamespaceRefContext.@ref.Type)
                     {
-                        case UsersetRewriteParser.STRING:
+                        case STRING:
                             @namespace = Unquote(usersetNamespaceRefContext.STRING().GetText());
                             break;
 
-                        case UsersetRewriteParser.TUPLE_USERSET_NAMESPACE:
+                        case TUPLE_USERSET_NAMESPACE:
                             @namespace = UsersetRef.TUPLE_USERSET_NAMESPACE;
                             break;
                     }
@@ -101,11 +101,11 @@ namespace RebacExperiments.Acl
 
                     switch (usersetObjectRefContext.@ref.Type)
                     {
-                        case UsersetRewriteParser.STRING:
+                        case STRING:
                             @object = Unquote(usersetObjectRefContext.STRING().GetText());
                             break;
 
-                        case UsersetRewriteParser.TUPLE_USERSET_OBJECT:
+                        case TUPLE_USERSET_OBJECT:
                             @object = UsersetRef.TUPLE_USERSET_OBJECT;
                             break;
                     }
@@ -122,11 +122,11 @@ namespace RebacExperiments.Acl
                     var usersetRelationRefContext = context.usersetRelationRef().First();
                     switch (usersetRelationRefContext.@ref.Type)
                     {
-                        case UsersetRewriteParser.STRING:
+                        case STRING:
                             relation = Unquote(usersetRelationRefContext.STRING().GetText());
                             break;
 
-                        case UsersetRewriteParser.TUPLE_USERSET_RELATION:
+                        case TUPLE_USERSET_RELATION:
                             relation = UsersetRef.TUPLE_USERSET_RELATION;
                             break;
                     }
@@ -140,29 +140,29 @@ namespace RebacExperiments.Acl
                 };
             }
 
-            public override UsersetExpression VisitNamespaceRef([NotNull] UsersetRewriteParser.NamespaceRefContext context)
+            public override UsersetExpression VisitNamespaceRef([NotNull] NamespaceRefContext context)
             {
                 return base.VisitNamespaceRef(context);
             }
 
-            public override UsersetExpression VisitObjectRef([NotNull] UsersetRewriteParser.ObjectRefContext context)
+            public override UsersetExpression VisitObjectRef([NotNull] ObjectRefContext context)
             {
                 return base.VisitObjectRef(context);
             }
 
 
-            public override UsersetExpression VisitRelationRef([NotNull] UsersetRewriteParser.RelationRefContext context)
+            public override UsersetExpression VisitRelationRef([NotNull] RelationRefContext context)
             {
                 return base.VisitRelationRef(context);
             }
 
-            public override UsersetExpression VisitSetOperationUserset([NotNull] UsersetRewriteParser.SetOperationUsersetContext context)
+            public override UsersetExpression VisitSetOperationUserset([NotNull] SetOperationUsersetContext context)
             {
                 var op = context.op.Type switch
                 {
-                    UsersetRewriteParser.UNION => SetOperationEnum.Union,
-                    UsersetRewriteParser.INTERSECT => SetOperationEnum.Intersect,
-                    UsersetRewriteParser.EXCLUDE => SetOperationEnum.Exclude,
+                    UNION => SetOperationEnum.Union,
+                    INTERSECT => SetOperationEnum.Intersect,
+                    EXCLUDE => SetOperationEnum.Exclude,
                     _ => throw new ArgumentException(nameof(context.op.Type)),
                 };
                 return new SetOperationUsersetExpression
@@ -174,16 +174,16 @@ namespace RebacExperiments.Acl
                 };
             }
 
-            public override UsersetExpression VisitThisUserset([NotNull] UsersetRewriteParser.ThisUsersetContext context)
+            public override UsersetExpression VisitThisUserset([NotNull] ThisUsersetContext context)
             {
                 return new ThisUsersetExpression();
             }
 
-            public override UsersetExpression VisitTupleset([NotNull] UsersetRewriteParser.TuplesetContext context)
+            public override UsersetExpression VisitTupleset([NotNull] TuplesetContext context)
             {
                 string? @namespace = null;
 
-                if (context.namespaceRef().Length > 1) 
+                if (context.namespaceRef().Length > 1)
                 {
                     throw new InvalidOperationException("More than one namespace specified"); //TODO: figure out which exception to throw
                 }
@@ -192,7 +192,7 @@ namespace RebacExperiments.Acl
                 {
                     @namespace = Unquote(context.namespaceRef().First().@ref.Text);
                 }
-                
+
                 string? @object = null;
 
                 if (context.objectRef().Length > 1)
@@ -204,14 +204,14 @@ namespace RebacExperiments.Acl
                 {
                     @object = Unquote(context.objectRef().First().@ref.Text);
                 }
-                
+
                 string relation = string.Empty;
-                
+
                 if (context.relationRef().Length > 1)
                 {
                     throw new InvalidOperationException("More than one relation specified"); //TODO: figure out which exception to throw
                 }
-                
+
                 if (context.relationRef().Length != 0)
                 {
                     relation = Unquote(context.relationRef().First().@ref.Text);
@@ -225,7 +225,7 @@ namespace RebacExperiments.Acl
                 };
             }
 
-            public override UsersetExpression VisitTupleToUserset([NotNull] UsersetRewriteParser.TupleToUsersetContext context)
+            public override UsersetExpression VisitTupleToUserset([NotNull] TupleToUsersetContext context)
             {
                 return new TupleToUsersetExpression
                 {
@@ -234,22 +234,22 @@ namespace RebacExperiments.Acl
                 };
             }
 
-            public override UsersetExpression VisitUserset([NotNull] UsersetRewriteParser.UsersetContext context)
+            public override UsersetExpression VisitUserset([NotNull] UsersetContext context)
             {
                 return base.VisitUserset(context);
             }
 
-            public override UsersetExpression VisitUsersetNamespaceRef([NotNull] UsersetRewriteParser.UsersetNamespaceRefContext context)
+            public override UsersetExpression VisitUsersetNamespaceRef([NotNull] UsersetNamespaceRefContext context)
             {
                 return base.VisitUsersetNamespaceRef(context);
             }
 
-            public override UsersetExpression VisitUsersetObjectRef([NotNull] UsersetRewriteParser.UsersetObjectRefContext context)
+            public override UsersetExpression VisitUsersetObjectRef([NotNull] UsersetObjectRefContext context)
             {
                 return base.VisitUsersetObjectRef(context);
             }
 
-            public override UsersetExpression VisitUsersetRelationRef([NotNull] UsersetRewriteParser.UsersetRelationRefContext context)
+            public override UsersetExpression VisitUsersetRelationRef([NotNull] UsersetRelationRefContext context)
             {
                 return base.VisitUsersetRelationRef(context);
             }

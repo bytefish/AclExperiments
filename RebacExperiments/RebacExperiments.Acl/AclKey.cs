@@ -18,7 +18,7 @@
         /// <summary>
         /// Gets or sets the Relation.
         /// </summary>
-        public string? Relation { get; set; }
+        public required string Relation { get; set; }
 
         public static AclKey Parse(string value)
         {
@@ -30,7 +30,7 @@
                 {
                     Namespace = null,
                     Id = value,
-                    Relation = null
+                    Relation = string.Empty
                 };
             }
 
