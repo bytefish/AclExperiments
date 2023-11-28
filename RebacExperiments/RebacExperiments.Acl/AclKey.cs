@@ -13,12 +13,12 @@
         /// <summary>
         /// Gets or sets the Id.
         /// </summary>
-        public required string Id { get; set; }
+        public string? Id { get; set; }
 
         /// <summary>
         /// Gets or sets the Relation.
         /// </summary>
-        public required string Relation { get; set; }
+        public string? Relation { get; set; }
 
         public static AclKey Parse(string value)
         {
@@ -30,7 +30,7 @@
                 {
                     Namespace = null,
                     Id = value,
-                    Relation = string.Empty
+                    Relation = null
                 };
             }
 

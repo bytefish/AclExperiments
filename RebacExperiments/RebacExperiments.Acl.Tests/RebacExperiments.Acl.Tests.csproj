@@ -11,9 +11,21 @@
 
   <ItemGroup>
     <None Remove="document.nsconfig" />
+    <None Remove="folder.nsconfig" />
+    <None Remove="org.nsconfig" />
+    <None Remove="user.nsconfig" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="org.nsconfig">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="folder.nsconfig">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="user.nsconfig">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="document.nsconfig">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

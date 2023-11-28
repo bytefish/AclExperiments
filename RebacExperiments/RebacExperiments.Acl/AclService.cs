@@ -14,6 +14,13 @@ namespace RebacExperiments.Acl
         /// </summary>
         private readonly HashSet<AclRelation> _relations = [];
 
+        public void AddNamespaceConfigurations(params NamespaceUsersetExpression[] namespaceUsersetExpressions)
+        {
+            foreach(var namespaceConfiguration in namespaceUsersetExpressions)
+            {
+                AddNamespaceConfiguration(namespaceConfiguration);
+            }
+        }
 
         public void AddNamespaceConfiguration(NamespaceUsersetExpression namespaceUsersetExpression)
         {

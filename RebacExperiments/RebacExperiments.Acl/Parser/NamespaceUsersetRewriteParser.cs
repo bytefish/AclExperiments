@@ -41,8 +41,9 @@ namespace RebacExperiments.Acl.Parser
                 return new RelationUsersetExpression
                 {
                     Name = Unquote(context.relationName.Text),
-                    Rewrite = context.usersetRewrite() != null ? VisitUsersetRewrite(context.usersetRewrite()) : null
-                };
+                    Rewrite = context.usersetRewrite() != null ? 
+                        VisitUsersetRewrite(context.usersetRewrite()) : new ChildUsersetExpression { Userset = new ThisUsersetExpression() }
+            };
             }
 
             public override UsersetExpression VisitUsersetRewrite([NotNull] UsersetRewriteContext context)
@@ -69,7 +70,7 @@ namespace RebacExperiments.Acl.Parser
 
                 if (context.usersetNamespaceRef().Length > 1)
                 {
-                    throw new InvalidOperationException("More than one namespace specified"); //TODO: figure out which exception to throw
+                    throw new InvalidOperationException("More than one namespace specified");
                 }
 
                 if (context.usersetNamespaceRef().Length != 0)
@@ -92,7 +93,7 @@ namespace RebacExperiments.Acl.Parser
 
                 if (context.usersetObjectRef().Length > 1)
                 {
-                    throw new InvalidOperationException("More than one object specified"); //TODO: figure out which exception to throw
+                    throw new InvalidOperationException("More than one object specified");
                 }
 
                 if (context.usersetObjectRef().Length != 0)
@@ -117,9 +118,11 @@ namespace RebacExperiments.Acl.Parser
                 {
                     throw new InvalidOperationException("More than one relation specified"); //TODO: figure out which exception to throw
                 }
+                
                 if (context.usersetRelationRef().Length != 0)
                 {
                     var usersetRelationRefContext = context.usersetRelationRef().First();
+
                     switch (usersetRelationRefContext.@ref.Type)
                     {
                         case STRING:
@@ -132,6 +135,11 @@ namespace RebacExperiments.Acl.Parser
                     }
                 }
 
+                if (@namespace == null && UsersetRef.TUPLE_USERSET_OBJECT.Equals(@object))
+                {
+                    @namespace = UsersetRef.TUPLE_USERSET_NAMESPACE;
+                }
+                
                 return new ComputedUsersetExpression
                 {
                     Namespace = @namespace,

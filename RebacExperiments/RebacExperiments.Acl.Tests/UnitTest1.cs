@@ -1,3 +1,4 @@
+using RebacExperiments.Acl.Eval;
 using RebacExperiments.Acl.Model;
 using RebacExperiments.Acl.Parser;
 
@@ -10,7 +11,7 @@ namespace RebacExperiments.Acl.Tests
         {
             var configuration = new NamespaceUsersetExpression
             {
-                Name = "document",
+                Name = "doc",
                 Relations =
                 {
                     {
@@ -61,10 +62,24 @@ namespace RebacExperiments.Acl.Tests
                 }
             };
 
+            var aclService = new AclService();
 
-            var a = File.ReadAllText("document.nsconfig");
+            // Parse and add Namespace Configurations.
+            aclService.AddNamespaceConfigurations(
+                NamespaceUsersetRewriteParser.Parse(text: File.ReadAllText("user.nsconfig")),
+                NamespaceUsersetRewriteParser.Parse(text: File.ReadAllText("document.nsconfig")),
+                NamespaceUsersetRewriteParser.Parse(text: File.ReadAllText("folder.nsconfig")));
 
-            var result = NamespaceUsersetRewriteParser.Parse(a);
+            // Create the Test Case for checking the TupleToUserset Rule:
+
+            // Folder 'folder_foo' is parent of Document 'doc_foo'.
+            aclService.AddRelation(AclRelation.Parse("doc:doc_foo#parent@folder:folder_foo#..."));
+
+            // User 'user1' is viewer of Folder 'folder_foo'.
+            aclService.AddRelation(AclRelation.Parse("folder:folder_foo#viewer@user1"));
+
+            // Find out who is viewer of doc_foo
+            var result = EvalTreeFactory.Evaluate(aclService, new AclKey { Namespace = "doc", Id = null, Relation = "viewer" });
         }
     }
 }

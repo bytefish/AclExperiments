@@ -22,8 +22,7 @@ namespace RebacExperiments.Acl.Eval
 
             public EvalTree Eval()
             {
-                // TODO Fix Nullable warning
-                NamespaceUsersetExpression namespaceConfig = _service.GetNamespaceConfiguration(_object.Namespace!);
+                NamespaceUsersetExpression namespaceConfig = _service.GetNamespaceConfiguration(_object.Namespace);
 
                 return VisitNamespaceUsersetExpr(namespaceConfig);
             }
@@ -71,11 +70,28 @@ namespace RebacExperiments.Acl.Eval
 
             public EvalTree VisitComputedUsersetExpr(ComputedUsersetExpression expr)
             {
-                throw new NotImplementedException();
+                EvalTree eval = new Builder(_service, new AclKey
+                {
+                    Namespace = expr.Namespace ?? _object.Namespace,
+                    Id = expr.Object ?? _object.Id,
+                    Relation = expr.Relation ?? _object.Relation
+                }).Eval();
+
+                return new EvalTree
+                {
+                    Expression = expr,
+                    Children = [eval],
+                    Result = eval.Result
+                };
             }
 
             public EvalTree VisitNamespaceUsersetExpr(NamespaceUsersetExpression expr)
             {
+                if(_object.Relation == null)
+                {
+                    throw new Exception();
+                }
+
                 if (!expr.Relations.TryGetValue(_object.Relation, out RelationUsersetExpression? r))
                 {
                     throw new InvalidOperationException($"The Namespace UsersetRewrite does not contain Relation '{_object.Relation}'");
@@ -86,26 +102,31 @@ namespace RebacExperiments.Acl.Eval
 
             public EvalTree VisitRelationUsersetExpr(RelationUsersetExpression expr)
             {
-                return expr.Rewrite!.Accept(this);
+                return expr.Rewrite.Accept(this);
             }
 
             public EvalTree VisitSetOperationExpr(SetOperationUsersetExpression expr)
             {
+                // Evaluate all Lead Nodes, like _this, ComputerUserset, TupleToUserset, ...
                 List<EvalTree> children = expr.Children
                     .Select(x => x.Accept(this))
                     .ToList();
 
-                HashSet<AclKey>? result = [];
+                // Holds the Results:
+                HashSet<AclKey>? result = null;
 
+                // 
             loop:
                 foreach (var child in children)
                 {
+                    // If there is one child only, we don't need to build sets...
                     if (result == null)
                     {
                         result = new HashSet<AclKey>(child.Result);
                     }
                     else
                     {
+                        // Build a Union over the Children Results:
                         switch (expr.Operation)
                         {
                             case SetOperationEnum.Union:
@@ -131,19 +152,23 @@ namespace RebacExperiments.Acl.Eval
                 {
                     Expression = expr,
                     Children = children,
-                    Result = result
+                    Result = result ?? []
                 };
             }
 
             public EvalTree VisitThisUsersetExpr(ThisUsersetExpression expr)
             {
+                var a = _service.GetRelations(_object);
+
+                var relations = _service.GetRelations(_object)
+                        .Select(x => x.User)
+                        .ToHashSet();
+
                 return new EvalTree
                 {
                     Expression = expr,
                     Children = [],
-                    Result = _service.GetRelations(_object)
-                        .Select(x => x.User)
-                        .ToHashSet()
+                    Result = relations
                 };
             }
 
@@ -154,12 +179,14 @@ namespace RebacExperiments.Acl.Eval
 
             public EvalTree VisitTupleToUsersetExpr(TupleToUsersetExpression expr)
             {
-                HashSet<AclRelation> tupleset = _service.GetRelations(new AclKey
+                var aclKey = new AclKey
                 {
                     Namespace = expr.TuplesetExpression.Namespace ?? _object.Namespace,
                     Id = expr.TuplesetExpression.Object ?? _object.Id,
                     Relation = expr.TuplesetExpression.Relation ?? _object.Relation
-                });
+                };
+
+                HashSet<AclRelation> tupleset = _service.GetRelations(aclKey);
 
                 var children = new List<EvalTree>();
 
