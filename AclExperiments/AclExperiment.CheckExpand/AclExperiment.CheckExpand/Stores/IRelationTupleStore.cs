@@ -25,7 +25,7 @@ namespace AclExperiment.CheckExpand.Stores
         /// <param name="relation">ACL Relation between an Object and Subject</param>
         /// <param name="cancellationToken">CancellationToken to cancel asynchronous processing</param>
         /// <returns>Number of Matching Rows for the given <see cref="AclRelation"/></returns>
-        Task<int> GetRelationTuplesRowCountAsync(AclRelation relation, CancellationToken cancellationToken);
+        Task<int> GetRelationTuplesRowCountAsync(RelationTupleQuery query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Returns all RelationTuples matching the given filters.

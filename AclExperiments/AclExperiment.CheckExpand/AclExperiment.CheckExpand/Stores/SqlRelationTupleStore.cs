@@ -3,6 +3,7 @@ using AclExperiment.CheckExpand.Database.Model;
 using AclExperiment.CheckExpand.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace AclExperiment.CheckExpand.Stores
 {
@@ -81,16 +82,16 @@ namespace AclExperiment.CheckExpand.Stores
         /// <param name="relation">The <see cref="AclRelation"/> to query for</param>
         /// <param name="cancellationToken">CancellationToken to cancel asynchronous processing</param>
         /// <returns></returns>
-        public async Task<int> GetRelationTuplesRowCountAsync(AclRelation relation, CancellationToken cancellationToken)
+        public async Task<int> GetRelationTuplesRowCountAsync(RelationTupleQuery query, CancellationToken cancellationToken)
         {
             using (var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken))
             {
-                var subject = AclSubjects.SubjectToString(relation.Subject);
+                var subject = AclSubjects.SubjectToString(query.Subject);
 
                 int count = await context.SqlRelationTuples
-                    .Where(x => x.Namespace == relation.Object.Namespace)
-                    .Where(x => x.Object == relation.Object.Id)
-                    .Where(x => x.Relation == relation.Relation)
+                    .Where(x => x.Namespace == query.Object.Namespace)
+                    .Where(x => x.Object == query.Object.Id)
+                    .Where(x => query.Relations.Contains(x.Relation))
                     .Where(x => x.Subject == subject)
                     .CountAsync(cancellationToken);
 
