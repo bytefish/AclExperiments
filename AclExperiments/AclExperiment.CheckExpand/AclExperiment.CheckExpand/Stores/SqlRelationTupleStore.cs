@@ -2,8 +2,6 @@
 using AclExperiment.CheckExpand.Database.Model;
 using AclExperiment.CheckExpand.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace AclExperiment.CheckExpand.Stores
 {
@@ -16,14 +14,17 @@ namespace AclExperiment.CheckExpand.Stores
             _dbContextFactory = dbContextFactory;
         }
 
-        public async Task<IList<AclRelation>> GetRelationTuplesAsync(string @namespace, string? @object, string[]? relations, string? subject, CancellationToken cancellationToken)
+        public async Task<List<AclRelation>> GetRelationTuplesAsync(string? @namespace, string? @object, string[]? relations, string? subject, CancellationToken cancellationToken)
         {
             using (var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken))
             {
                 IQueryable<SqlRelationTuple> queryable = context.SqlRelationTuples;
 
-                queryable = queryable
-                    .Where(x => x.Namespace == @namespace);
+                if (@namespace != null)
+                {
+                    queryable = queryable
+                        .Where(x => x.Namespace == @namespace);
+                }
 
                 if (@object != null)
                 {

@@ -22,12 +22,16 @@ namespace AclExperiment.CheckExpand
             _namespaceConfigurationStore = namespaceConfigurationStore;
         }
 
+        #region Check API
+
         public async Task<bool> CheckAsync(string @namespace, string @object, string relation, string subject, CancellationToken cancellationToken)
         {
             // Get the latest Namespace Configuration from the Store:
-            var namespaceConfiguration = await _namespaceConfigurationStore.GetLatestNamespaceConfigurationAsync(@namespace, cancellationToken);
+            var namespaceConfiguration = await _namespaceConfigurationStore
+                .GetLatestNamespaceConfigurationAsync(@namespace, cancellationToken)
+                .ConfigureAwait(false);
 
-            // Get the Rewrite for the Namespace Configuration:
+            // Get the Rewrite for the Relation from the Namespace Configuration:
             var rewrite = GetUsersetRewrite(namespaceConfiguration, relation);
 
             // Check Rewrite Rules for the Relation:
@@ -178,8 +182,9 @@ namespace AclExperiment.CheckExpand
                     }
                 case ComputedUsersetExpression computedUsersetExpression:
                     {
+                        // TODO Fix Nullable
                         return await this
-                            .CheckAsync(@namespace, @object, computedUsersetExpression.Relation!, user, cancellationToken)
+                            .CheckAsync(@namespace, @object, computedUsersetExpression.Relation, user, cancellationToken)
                             .ConfigureAwait(false);
                     }
                 case TupleToUsersetExpression tupleToUsersetExpression:
@@ -225,5 +230,164 @@ namespace AclExperiment.CheckExpand
             }
         }
 
+        #endregion Check API
+
+        #region Expand API
+
+        public async Task<SubjectTree> ExpandAsync(string @namespace, string @object, string relation, int depth, CancellationToken cancellationToken)
+        {
+            // Get the latest Namespace Configuration from the Store:
+            var namespaceConfiguration = await _namespaceConfigurationStore
+                .GetLatestNamespaceConfigurationAsync(@namespace, cancellationToken)
+                .ConfigureAwait(false);
+
+            var tree = new SubjectTree
+            {
+                Expression = namespaceConfiguration,
+                Subject = new AclSubjectSet
+                {
+                    Namespace = @namespace,
+                    Object = @object,
+                    Relation = relation,
+                }
+            };
+
+            // Get the Rewrite for the Relation from the Namespace Configuration:
+            var rewrite = GetUsersetRewrite(namespaceConfiguration, relation);
+
+            // Expand the Rewrite:
+           await this
+                .ExpandRewriteAsync(rewrite, tree, @namespace, @object, relation, depth, cancellationToken)
+                .ConfigureAwait(false);
+
+            return tree;
+        }
+
+        public async Task ExpandRewriteAsync(UsersetExpression rewrite, SubjectTree tree, string @namespace, string @object, string relation, int depth, CancellationToken cancellationToken)
+        {
+            switch (rewrite)
+            {
+                case ThisUsersetExpression thisUsersetExpression:
+                    await this
+                        .Expand_This_Async(thisUsersetExpression, tree, @namespace, @object, relation, depth, cancellationToken)
+                        .ConfigureAwait(false);
+                    break;
+                case ComputedUsersetExpression computedUsersetExpression:
+                    await this
+                        .Expand_ComputedUserSet_Async(computedUsersetExpression, tree, @namespace, @object, relation, depth, cancellationToken)
+                        .ConfigureAwait (false);
+                    break;
+                case TupleToUsersetExpression tupleToUsersetExpression:
+                    await this
+                        .Expand_TupleToUserset_Async(tupleToUsersetExpression, tree, @namespace, @object, relation, depth, cancellationToken)
+                        .ConfigureAwait(false);
+                    break;
+                case SetOperationUsersetExpression setOperationExpression:
+
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unable to execute check for Expression '{rewrite.GetType().Name}'");
+            }
+        }
+
+        public async Task Expand_SetOperation_Async(SetOperationUsersetExpression setOperationUsersetExpression, SubjectTree tree, string @namespace, string @object, string relation, int depth, CancellationToken cancellationToken)
+        {
+            foreach(var child in setOperationUsersetExpression.Children)
+            {
+                await ExpandRewriteAsync(child, tree, @namespace, @object, relation, depth, cancellationToken)
+
+            }
+        }
+
+        public async Task Expand_This_Async(ThisUsersetExpression expression, SubjectTree tree, string @namespace, string @object, string relation, int depth, CancellationToken cancellationToken)
+        {
+            var tuples = await _relationTupleStore
+                .GetRelationTuplesAsync(@namespace, @object, [relation], null, cancellationToken)
+                .ConfigureAwait(false);
+
+            foreach(var tuple in tuples)
+            {
+                if(tuple.Subject is AclSubjectSet subjectSet)
+                {
+                    var rr = subjectSet.Relation;
+
+                    if(rr == "...")
+                    {
+                        rr = relation;
+                    }
+
+                    var t = await this
+                        .ExpandAsync(subjectSet.Namespace, subjectSet.Object, rr, depth - 1, cancellationToken)
+                        .ConfigureAwait(false);
+
+                    tree.Children.Add(t);
+                } 
+                else
+                {
+                    var t = new SubjectTree
+                    {
+                        Expression = expression,
+                        Subject = tuple.Subject
+                    };
+
+                    tree.Children.Add(t);
+                }
+            }
+        }
+
+        public async Task Expand_ComputedUserSet_Async(ComputedUsersetExpression expression, SubjectTree tree, string @namespace, string @object, string relation, int depth, CancellationToken cancellationToken)
+        {
+            // TODO Fix Nullable
+            var t = await this
+                .ExpandAsync(@namespace, @object, expression.Relation, depth - 1, cancellationToken)
+                .ConfigureAwait(false);
+
+            tree.Children.Append(t);
+        }
+
+        public async Task Expand_TupleToUserset_Async(TupleToUsersetExpression tupleToUsersetExpression, SubjectTree tree, string @namespace, string @object, string relation, int depth, CancellationToken cancellationToken)
+        {
+            var rr = tupleToUsersetExpression.TuplesetExpression.Relation;
+
+            if(rr == "...")
+            {
+                rr = relation;
+            }
+
+            var tuples = await _relationTupleStore
+                .GetRelationTuplesAsync(@namespace, @object, [rr], null, cancellationToken)
+                .ConfigureAwait(false);
+
+            foreach(var tuple in tuples)
+            {
+                if(tuple.Subject is AclSubjectSet subjectSet)
+                {
+                    rr = subjectSet.Relation;
+
+                    if(rr == "...")
+                    {
+                        rr = relation;
+                    }
+
+                    var t = await this
+                        .ExpandAsync(subjectSet.Namespace, subjectSet.Object, subjectSet.Relation, depth - 1, cancellationToken)
+                        .ConfigureAwait(false);
+
+                    tree.Children.Append(t);
+                } 
+                else
+                {
+                    var t = new SubjectTree
+                    {
+                        Expression = tupleToUsersetExpression,
+                        Subject = tuple.Subject
+                    };
+
+                    tree.Children.Append(t);
+                }
+            }
+        }
+
+        #endregion Expand API
     }
 }

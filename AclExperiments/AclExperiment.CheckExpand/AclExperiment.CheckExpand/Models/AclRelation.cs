@@ -140,19 +140,18 @@ namespace AclExperiment.CheckExpand.Models
     public record SubjectTree
     {
         /// <summary>
-        /// Gets or sets the Userset Expression.
+        /// Gets or sets the Userset Expression for this.
         /// </summary>
-        public required UsersetExpression Userset { get; set; }
+        public required UsersetExpression Expression { get; set; }
+
+        /// <summary>
+        /// Gets or sets the determined Subject.
+        /// </summary>
+        public required AclSubject Subject { get; set; }
 
         /// <summary>
         /// Gets or sets the Children Trees.
         /// </summary>
         public List<SubjectTree> Children { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the determined Subjects.
-        /// </summary>
-        public List<AclSubject> Subjects { get; set; } = new();
-
     }
 }

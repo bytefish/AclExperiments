@@ -1,9 +1,4 @@
 ﻿using AclExperiment.CheckExpand.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AclExperiment.CheckExpand.Stores
 {
@@ -30,11 +25,12 @@ namespace AclExperiment.CheckExpand.Stores
         /// <summary>
         /// Returns all RelationTuples matching the given filters.
         /// </summary>
+        /// <param name="namespace">Namespace</param>
         /// <param name="object">Object</param>
         /// <param name="relations">Relations</param>
         /// <param name="subject">Subject</param>
         /// <param name="cancellationToken">CancellationToken to cancel asynchronous processing</param>
         /// <returns></returns>
-        Task<List<AclRelation>> GetRelationTuplesAsync(string? @object, string[]? relations, string? subject, CancellationToken cancellationToken);
+        Task<List<AclRelation>> GetRelationTuplesAsync(string? @namespace, string? @object, string[]? relations, string? subject, CancellationToken cancellationToken);
     }
 }

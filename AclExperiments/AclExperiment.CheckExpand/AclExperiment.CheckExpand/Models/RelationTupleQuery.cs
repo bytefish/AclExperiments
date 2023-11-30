@@ -24,6 +24,6 @@ namespace AclExperiment.CheckExpand.Models
         /// <summary>
         /// Gets or sets the Subject.
         /// </summary>
-        public required AclSubject Subject { get; set;; }
+        public AclSubject? Subject { get; set;; }
     }
 }
