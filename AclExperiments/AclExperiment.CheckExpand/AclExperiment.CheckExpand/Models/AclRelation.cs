@@ -1,4 +1,6 @@
 ﻿
+using AclExperiment.CheckExpand.Expressions;
+
 namespace AclExperiment.CheckExpand.Models
 {
 
@@ -17,9 +19,14 @@ namespace AclExperiment.CheckExpand.Models
 
     }
 
-    ///
     public static class AclSubjects
     {
+
+        /// <summary>
+        /// Converts a given string to a <see cref="AclSubject"/>, which is either a <see cref="AclSubjectId"/> or a <see cref="AclSubjectSet"/>.
+        /// </summary>
+        /// <param name="s">Subject String in Google Zanzibar Notation</param>
+        /// <returns>The <see cref="AclSubject"/></returns>
         public static AclSubject SubjectFromString(string s)
         {
             if (s.Contains('#'))
@@ -41,8 +48,6 @@ namespace AclExperiment.CheckExpand.Models
                 default:
                     throw new InvalidOperationException($"Cannot format Subject Type '{s.GetType().Name}'");
             }
-
-
         }
     }
 
@@ -111,7 +116,7 @@ namespace AclExperiment.CheckExpand.Models
     /// <summary>
     /// A Relation between an Object and a Subject (or SubjectSet).
     /// </summary>
-    public class AclRelation
+    public record AclRelation
     {
         /// <summary>
         /// Gets or sets the Object.
@@ -127,5 +132,27 @@ namespace AclExperiment.CheckExpand.Models
         /// Gets or sets the Subject.
         /// </summary>
         public required AclSubject Subject { get; set; }
+    }
+
+    /// <summary>
+    /// The expanded Subject Tree.
+    /// </summary>
+    public record SubjectTree
+    {
+        /// <summary>
+        /// Gets or sets the Userset Expression.
+        /// </summary>
+        public required UsersetExpression Userset { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Children Trees.
+        /// </summary>
+        public List<SubjectTree> Children { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the determined Subjects.
+        /// </summary>
+        public List<AclSubject> Subjects { get; set; } = new();
+
     }
 }

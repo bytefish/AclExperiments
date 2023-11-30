@@ -11,5 +11,7 @@ namespace AclExperiment.CheckExpand.Database
     public class ApplicationDbContext : DbContext
     {
         public DbSet<SqlRelationTuple> SqlRelationTuples { get; set; }
+
+        public DbSet<SqlNamespaceConfiguration> SqlNamespaceConfigurations { get; set; }
     }
 }
