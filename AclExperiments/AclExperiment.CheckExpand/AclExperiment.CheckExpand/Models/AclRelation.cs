@@ -145,9 +145,9 @@ namespace AclExperiment.CheckExpand.Models
         public required UsersetExpression Expression { get; set; }
 
         /// <summary>
-        /// Gets or sets the determined Subject.
+        /// Gets or sets the determined Subjects.
         /// </summary>
-        public required AclSubject Subject { get; set; }
+        public HashSet<AclSubject> Result { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the Children Trees.
