@@ -6,9 +6,9 @@
 set ANTLR4_JAR=%~dp0tools\antlr-4.13.1-complete.jar  
 
 :: Parameters for the Code Generator
-set PARAM_USERSET_GRAMMAR=%~dp0\RebacExperiments\RebacExperiments.Acl\Parser\UsersetRewrite.g4
-set PARAM_OUTPUT_FOLDER=%~dp0\RebacExperiments\RebacExperiments.Acl\Parser\Generated
-set PARAM_NAMESPACE=RebacExperiments.Acl.Parser.Generated
+set PARAM_USERSET_GRAMMAR=%~dp0\src\AclExperiments\Parser\UsersetRewrite.g4
+set PARAM_OUTPUT_FOLDER=%~dp0\src\AclExperiments\Parser\Generated
+set PARAM_NAMESPACE=AclExperiments.Parser.Generated
 
 :: Run the "Antlr4" Code Generator
 java -jar %ANTLR4_JAR%^
