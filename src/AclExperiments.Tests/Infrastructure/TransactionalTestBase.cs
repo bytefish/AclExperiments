@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System.Transactions;
 
-namespace RebacExperiments.Server.Api.Tests
+namespace AclExperiments.Tests.Infrastructure
 {
     /// <summary>
     /// Will be used by all integration tests.
@@ -95,7 +95,7 @@ namespace RebacExperiments.Server.Api.Tests
         /// </summary>
         public virtual void OnTearDownInTransaction()
         {
-            
+
         }
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace RebacExperiments.Server.Api.Tests
 
                 x.UseSqlServer("ApplicationDatabase");
             });
-            
+
             services.AddSingleton<INamespaceConfigurationStore, SqlNamespaceConfigurationStore>();
             services.AddSingleton<IRelationTupleStore, SqlRelationTupleStore>();
             services.AddSingleton<AclService>();
