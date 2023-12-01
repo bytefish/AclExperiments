@@ -81,9 +81,9 @@ namespace AclExperiment.CheckExpand
                     return await this
                         .CheckComputedUsersetAsync(computedUsersetExpression, @namespace, @object, relation, subject, cancellationToken)
                         .ConfigureAwait(false);
-                case TupleToUsersetExpression:
+                case TupleToUsersetExpression tupleToUsersetExpression:
                     return await this
-                        .CheckTupleToUsersetAsync(rewrite, @namespace, @object, relation, subject, cancellationToken)
+                        .CheckTupleToUsersetAsync(tupleToUsersetExpression, @namespace, @object, relation, subject, cancellationToken)
                         .ConfigureAwait(false);
                 case SetOperationUsersetExpression setOperationExpression:
                     return await this
