@@ -153,7 +153,6 @@ namespace AclExperiment.CheckExpand.Parser
                 {
                     UNION => SetOperationEnum.Union,
                     INTERSECT => SetOperationEnum.Intersect,
-                    EXCLUDE => SetOperationEnum.Exclude,
                     _ => throw new ArgumentException(nameof(context.op.Type)),
                 };
 
@@ -212,7 +211,7 @@ namespace AclExperiment.CheckExpand.Parser
                 return new TuplesetExpression
                 {
                     Namespace = @namespace,
-                    Object = @object,
+                    Object = @object, 
                     Relation = relation
                 };
             }

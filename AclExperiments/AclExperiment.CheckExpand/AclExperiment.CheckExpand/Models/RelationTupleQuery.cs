@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AclExperiment.CheckExpand.Models
+﻿namespace AclExperiment.CheckExpand.Models
 {
     /// <summary>
-    /// Query.
+    /// A Query for a 
     /// </summary>
     public record RelationTupleQuery
     {
@@ -24,6 +18,6 @@ namespace AclExperiment.CheckExpand.Models
         /// <summary>
         /// Gets or sets the Subject.
         /// </summary>
-        public AclSubject? Subject { get; set;; }
+        public required AclSubject Subject { get; set; }
     }
 }

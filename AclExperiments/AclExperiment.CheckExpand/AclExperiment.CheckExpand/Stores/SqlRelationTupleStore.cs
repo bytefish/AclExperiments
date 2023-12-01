@@ -1,6 +1,7 @@
 ﻿using AclExperiment.CheckExpand.Database;
 using AclExperiment.CheckExpand.Database.Model;
 using AclExperiment.CheckExpand.Models;
+using AclExperiment.CheckExpand.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace AclExperiment.CheckExpand.Stores
@@ -87,7 +88,10 @@ namespace AclExperiment.CheckExpand.Stores
         {
             using (var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken))
             {
-                var subject = AclSubjects.SubjectToString(query.Subject);
+
+                string? subject = null; 
+
+                AclSubjects.SubjectToString(query.Subject);
 
                 int count = await context.SqlRelationTuples
                     .Where(x => x.Namespace == query.Object.Namespace)

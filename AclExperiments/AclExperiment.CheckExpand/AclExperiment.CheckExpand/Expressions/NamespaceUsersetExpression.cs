@@ -16,10 +16,5 @@
         /// Gets or sets the Relations expressed by the Namespace configuration.
         /// </summary>
         public Dictionary<string, RelationUsersetExpression> Relations { get; set; } = new();
-
-        public override T Accept<T>(IUsersetExpressionVisitor<T> visitor)
-        {
-            return visitor.VisitNamespaceUsersetExpr(this);
-        }
     }
 }

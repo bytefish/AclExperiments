@@ -7,9 +7,5 @@
     /// </summary>
     public record ThisUsersetExpression : UsersetExpression
     {
-        public override T Accept<T>(IUsersetExpressionVisitor<T> visitor)
-        {
-            return visitor.VisitThisUsersetExpr(this);
-        }
     }
 }

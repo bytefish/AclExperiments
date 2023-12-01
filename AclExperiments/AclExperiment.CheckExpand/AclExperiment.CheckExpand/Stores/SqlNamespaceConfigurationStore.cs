@@ -1,10 +1,8 @@
-﻿using AclExperiment.CheckExpand.Database;
-using AclExperiment.CheckExpand.Database.Model;
+﻿
+using AclExperiment.CheckExpand.Database;
 using AclExperiment.CheckExpand.Expressions;
-using AclExperiment.CheckExpand.Models;
 using AclExperiment.CheckExpand.Parser;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace AclExperiment.CheckExpand.Stores
 {
@@ -24,6 +22,7 @@ namespace AclExperiment.CheckExpand.Stores
                 var latestNamespaceConfiguration = await context.SqlNamespaceConfigurations
                     .Where(x => x.Name == name)
                     .OrderByDescending(x => x.Version)
+                    .AsNoTracking()
                     .FirstOrDefaultAsync(cancellationToken);
 
                 if(latestNamespaceConfiguration == null)
@@ -42,6 +41,7 @@ namespace AclExperiment.CheckExpand.Stores
                 var namespaceConfigurationByVersion = await context.SqlNamespaceConfigurations
                     .Where(x => x.Name == name)
                     .Where(x => x.Version == version)
+                    .AsNoTracking()
                     .FirstOrDefaultAsync(cancellationToken);
 
                 if (namespaceConfigurationByVersion == null)

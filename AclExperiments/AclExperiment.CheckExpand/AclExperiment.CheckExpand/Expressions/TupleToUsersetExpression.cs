@@ -17,10 +17,5 @@
         /// Gets or sets the Computer Userset.
         /// </summary>
         public required ComputedUsersetExpression ComputedUsersetExpression { get; set; }
-
-        public override T Accept<T>(IUsersetExpressionVisitor<T> visitor)
-        {
-            return visitor.VisitTupleToUsersetExpr(this);
-        }
     }
 }

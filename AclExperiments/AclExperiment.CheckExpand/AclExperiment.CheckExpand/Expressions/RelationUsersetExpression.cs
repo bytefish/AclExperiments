@@ -9,10 +9,5 @@
         public required string Name { get; set; }
 
         public UsersetExpression Rewrite { get; set; } = new ThisUsersetExpression();
-
-        public override T Accept<T>(IUsersetExpressionVisitor<T> visitor)
-        {
-            return visitor.VisitRelationUsersetExpr(this);
-        }
     }
 }

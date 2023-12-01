@@ -13,11 +13,6 @@
         /// <summary>
         /// Intersects the set of subjects found for the relations/permissions referenced.
         /// </summary>
-        Intersect = 2,
-
-        /// <summary>
-        /// Intersects the set of subjects found for the relations/permissions referenced.
-        /// </summary>
-        Exclude = 3,
+        Intersect = 2
     }
 }

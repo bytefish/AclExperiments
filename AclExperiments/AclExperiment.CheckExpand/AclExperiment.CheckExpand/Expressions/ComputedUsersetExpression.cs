@@ -21,10 +21,5 @@
         /// Gets or sets the Relation.
         /// </summary>
         public string? Relation { get; set; }
-
-        public override T Accept<T>(IUsersetExpressionVisitor<T> visitor)
-        {
-            return visitor.VisitComputedUsersetExpr(this);
-        }
     }
 }

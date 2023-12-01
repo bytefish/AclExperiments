@@ -7,12 +7,5 @@
     /// </summary>
     public abstract record UsersetExpression
     {
-        /// <summary>
-        /// Visits the current tree node.
-        /// </summary>
-        /// <typeparam name="T">Type of the Visitor</typeparam>
-        /// <param name="visitor">The Node Visitor</param>
-        /// <returns>Visitor Type</returns>
-        public abstract T Accept<T>(IUsersetExpressionVisitor<T> visitor);
     }
 }

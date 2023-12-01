@@ -15,10 +15,5 @@
         /// Gets or sets the Children.
         /// </summary>
         public required List<UsersetExpression> Children { get; set; }
-
-        public override T Accept<T>(IUsersetExpressionVisitor<T> visitor)
-        {
-            return visitor.VisitSetOperationExpr(this);
-        }
     }
 }
