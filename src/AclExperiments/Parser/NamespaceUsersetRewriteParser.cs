@@ -1,9 +1,8 @@
-﻿using AclExperiment.CheckExpand.Expressions;
-using Antlr4.Runtime;
+﻿using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
-using AclExperiment.CheckExpand.Parser.Generated;
-using static AclExperiment.CheckExpand.Parser.Generated.UsersetRewriteParser;
 using AclExperiments.Expressions;
+using AclExperiments.Parser.Generated;
+using static AclExperiments.Parser.Generated.UsersetRewriteParser;
 
 namespace AclExperiments.Parser
 {

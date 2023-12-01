@@ -10,6 +10,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AclExperiments", "src\AclExperiments\AclExperiments.csproj", "{4060CC6D-E878-41E9-B1B1-FC6F35327414}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AclExperiments.Tests", "src\AclExperiments.Tests\AclExperiments.Tests.csproj", "{441BF3C7-6B7E-4AB9-9161-B4E80F028C85}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{4060CC6D-E878-41E9-B1B1-FC6F35327414}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4060CC6D-E878-41E9-B1B1-FC6F35327414}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4060CC6D-E878-41E9-B1B1-FC6F35327414}.Release|Any CPU.Build.0 = Release|Any CPU
+		{441BF3C7-6B7E-4AB9-9161-B4E80F028C85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{441BF3C7-6B7E-4AB9-9161-B4E80F028C85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{441BF3C7-6B7E-4AB9-9161-B4E80F028C85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{441BF3C7-6B7E-4AB9-9161-B4E80F028C85}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
