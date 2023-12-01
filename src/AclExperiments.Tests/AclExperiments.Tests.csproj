@@ -11,10 +11,22 @@
 
   <ItemGroup>
     <None Remove="appsettings.json" />
+    <None Remove="Resources\doc.nsconfig" />
+    <None Remove="Resources\folder.nsconfig" />
+    <None Remove="Resources\user.nsconfig" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\user.nsconfig">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\doc.nsconfig">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\folder.nsconfig">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
