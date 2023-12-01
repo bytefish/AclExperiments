@@ -75,9 +75,10 @@
   <ItemGroup>
     <Build Include="Identity\Tables\User.sql" />
     <None Include="Scripts\Identity\pds-100-ins-identity-users.sql" />
-    <None Include="Scripts\Identity\pds-110-ins-identity-relation-tuples.sql" />
+    <None Include="Scripts\Identity\pds-120-ins-identity-relation-tuples.sql" />
     <Build Include="Identity\Tables\NamespaceConfiguration.sql" />
     <Build Include="Identity\Sequences\sq_NamespaceConfiguration.sql" />
     <Build Include="Identity\Indexes\UX_NamespaceConfiguration_Name_Version.sql" />
+    <None Include="Scripts\Identity\pds-110-ins-namespace-configurations.sql" />
   </ItemGroup>
 </Project>

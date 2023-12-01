@@ -6,6 +6,7 @@ namespace RebacExperiments.Server.Api.Tests
 {
     public class AclServiceTests : TransactionalTestBase
     {
+        
         ///// <summary>
         ///// In this test we create a <see cref="SqlUser"/> (user) and a <see cref="UserTask"/> (task). The 'user' is member of 
         ///// a <see cref="Team"/> (team). The 'user' is also a member of an <see cref="Organization"/> (oganization). Members 

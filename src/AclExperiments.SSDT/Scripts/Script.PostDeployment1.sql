@@ -23,7 +23,10 @@ GO
 :r .\Identity\pds-100-ins-identity-users.sql
 GO
 
-:r .\Identity\pds-110-ins-identity-relation-tuples.sql
+:r .\Identity\pds-110-ins-namespace-configurations.sql
+GO
+
+:r .\Identity\pds-120-ins-identity-relation-tuples.sql
 GO
 /*
   We need to reactivate all Temporal Tables after the initial data load.
