@@ -1,0 +1,1 @@
+﻿CREATE UNIQUE INDEX [UX_User_LogonName] ON [Identity].[User] ([LogonName]) WHERE [LogonName] IS NOT NULL;

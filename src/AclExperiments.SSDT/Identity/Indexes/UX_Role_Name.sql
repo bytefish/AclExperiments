@@ -1,0 +1,1 @@
+﻿CREATE UNIQUE INDEX [UX_Role_Name] ON [Identity].[Role] ([Name]);
