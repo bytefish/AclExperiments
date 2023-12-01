@@ -2,7 +2,7 @@
 
 namespace AclExperiments.Database.Model
 {
-    public record SqlRelationTuple
+    public class SqlRelationTuple : SqlEntity
     {
         /// <summary>
         /// Gets or sets the Object Namespace.

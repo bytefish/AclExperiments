@@ -1,0 +1,1 @@
+﻿CREATE UNIQUE INDEX [UX_NamespaceConfiguration_Name_Version] ON [Identity].[NamespaceConfiguration] ([Name], [Version])

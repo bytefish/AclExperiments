@@ -8,7 +8,7 @@
     [LastEditedBy]          INT                                         NOT NULL,
     [ValidFrom]             DATETIME2 (7) GENERATED ALWAYS AS ROW START NOT NULL,
     [ValidTo]               DATETIME2 (7) GENERATED ALWAYS AS ROW END   NOT NULL,
-    CONSTRAINT [PK_RelationTupleID] PRIMARY KEY ([RelationTupleID]),
+    CONSTRAINT [PK_RelationTuple] PRIMARY KEY ([RelationTupleID]),
     CONSTRAINT [FK_RelationTuple_LastEditedBy_User_UserID] FOREIGN KEY ([LastEditedBy]) REFERENCES [Identity].[User] ([UserID]),
     PERIOD FOR SYSTEM_TIME (ValidFrom, ValidTo)
 ) WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = [Identity].[RelationTupleHistory]));

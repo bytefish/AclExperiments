@@ -24,7 +24,7 @@ USING (VALUES
       -- doc:doc_232#viewer@user_1
       (1, 'doc',            'doc_323',      'viewer', 'user_1', 1, @ValidFrom, @ValidTo) 
       -- doc:doc_152#parent@folder:folder_152#...
-     ,(2, 'doc',            'doc_152',      'parent', 'folder:folder_152#...',   2, 'member', 1, @ValidFrom, @ValidTo)
+     ,(2, 'doc',            'doc_152',      'parent', 'folder:folder_152#...', 1, @ValidFrom, @ValidTo)
      -- folder:folder_152#viewer@user_2
      ,(3, 'folder',         'folder_152',   'viewer', 'user_2', 1, @ValidFrom, @ValidTo)
      

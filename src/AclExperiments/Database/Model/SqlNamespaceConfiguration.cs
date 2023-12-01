@@ -5,13 +5,8 @@ namespace AclExperiments.Database.Model
     /// <summary>
     /// A Namespace Configuration in the Google Zanzibar language format.
     /// </summary>
-    public class SqlNamespaceConfiguration
+    public class SqlNamespaceConfiguration : SqlEntity
     {
-        /// <summary>
-        /// Gets or sets the Id.
-        /// </summary>
-        public int Id { get; set; }
-
         /// <summary>
         /// Gets or sets the Name.
         /// </summary>
