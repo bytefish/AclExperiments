@@ -1,7 +1,8 @@
-﻿
-using AclExperiment.CheckExpand.Expressions;
+﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace AclExperiment.CheckExpand.Models
+using AclExperiments.Expressions;
+
+namespace AclExperiments.Models
 {
     /// <summary>
     /// The expanded Subject Tree.

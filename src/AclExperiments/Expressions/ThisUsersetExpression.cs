@@ -1,4 +1,6 @@
-﻿namespace AclExperiment.CheckExpand.Expressions
+﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+namespace AclExperiments.Expressions
 {
     /// <summary>
     /// Returns all users from stored relation tuples for the <code>object#relation</code> pair, including 

@@ -1,4 +1,6 @@
-﻿namespace AclExperiment.CheckExpand.Database.Model
+﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+namespace AclExperiments.Database.Model
 {
     /// <summary>
     /// A Namespace Configuration in the Google Zanzibar language format.

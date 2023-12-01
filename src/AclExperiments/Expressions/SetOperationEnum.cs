@@ -1,4 +1,6 @@
-﻿namespace AclExperiment.CheckExpand.Expressions
+﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+namespace AclExperiments.Expressions
 {
     /// <summary>
     /// The Set Operation to apply for a <see cref="UsersetExpression"/>.

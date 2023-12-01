@@ -1,4 +1,6 @@
-﻿namespace AclExperiment.CheckExpand.Expressions
+﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+namespace AclExperiments.Expressions
 {
     /// <summary>
     /// The root node of the Zanzibar Configuration language. It contains the 

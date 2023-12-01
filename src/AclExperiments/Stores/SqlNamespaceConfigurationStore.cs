@@ -1,23 +1,27 @@
-﻿
-using AclExperiment.CheckExpand.Database;
-using AclExperiment.CheckExpand.Expressions;
-using AclExperiment.CheckExpand.Parser;
+﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using AclExperiments.Database;
+using AclExperiments.Expressions;
+using AclExperiments.Parser;
 using Microsoft.EntityFrameworkCore;
 
-namespace AclExperiment.CheckExpand.Stores
+namespace AclExperiments.Stores
 {
+    /// <summary>
+    /// EntityFramework-core based implementation of a <see cref="INamespaceConfigurationStore"/>.
+    /// </summary>
     public class SqlNamespaceConfigurationStore : INamespaceConfigurationStore
     {
         private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
 
-        public SqlNamespaceConfigurationStore(IDbContextFactory<ApplicationDbContext> dbContextFactory) 
+        public SqlNamespaceConfigurationStore(IDbContextFactory<ApplicationDbContext> dbContextFactory)
         {
             _dbContextFactory = dbContextFactory;
         }
 
         public async Task<NamespaceUsersetExpression> GetLatestNamespaceConfigurationAsync(string name, CancellationToken cancellationToken)
         {
-            using(var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken))
+            using (var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken))
             {
                 var latestNamespaceConfiguration = await context.SqlNamespaceConfigurations
                     .Where(x => x.Name == name)
@@ -25,7 +29,7 @@ namespace AclExperiment.CheckExpand.Stores
                     .AsNoTracking()
                     .FirstOrDefaultAsync(cancellationToken);
 
-                if(latestNamespaceConfiguration == null)
+                if (latestNamespaceConfiguration == null)
                 {
                     throw new InvalidOperationException($"No Namespace Configuration named '{name}' found");
                 }

@@ -1,12 +1,8 @@
-﻿using AclExperiment.CheckExpand.Expressions;
-using AclExperiment.CheckExpand.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace AclExperiment.CheckExpand.Stores
+using AclExperiments.Expressions;
+
+namespace AclExperiments.Stores
 {
     public interface INamespaceConfigurationStore
     {

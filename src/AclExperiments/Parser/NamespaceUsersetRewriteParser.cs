@@ -3,8 +3,9 @@ using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 using AclExperiment.CheckExpand.Parser.Generated;
 using static AclExperiment.CheckExpand.Parser.Generated.UsersetRewriteParser;
+using AclExperiments.Expressions;
 
-namespace AclExperiment.CheckExpand.Parser
+namespace AclExperiments.Parser
 {
     public class NamespaceUsersetRewriteParser
     {
@@ -211,7 +212,7 @@ namespace AclExperiment.CheckExpand.Parser
                 return new TuplesetExpression
                 {
                     Namespace = @namespace,
-                    Object = @object, 
+                    Object = @object,
                     Relation = relation
                 };
             }

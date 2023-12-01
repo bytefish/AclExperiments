@@ -1,7 +1,12 @@
-﻿using AclExperiment.CheckExpand.Models;
+﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace AclExperiment.CheckExpand.Utils
+using AclExperiments.Models;
+
+namespace AclExperiments.Utils
 {
+    /// <summary>
+    /// Utility methods for working with an <see cref="AclSubject"/>.
+    /// </summary>
     public static class AclSubjects
     {
         /// <summary>

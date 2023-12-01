@@ -1,6 +1,8 @@
-﻿using AclExperiment.CheckExpand.Models;
+﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace AclExperiment.CheckExpand.Stores
+using AclExperiments.Models;
+
+namespace AclExperiments.Stores
 {
     public interface IRelationTupleStore
     {
@@ -12,7 +14,6 @@ namespace AclExperiment.CheckExpand.Stores
         /// <param name="cancellationToken">CancellationToken to cancel asynchronous processing</param>
         /// <returns>An awaitable Task for SubjectSets</returns>
         Task<List<AclSubjectSet>> GetSubjectSetsAsync(AclObject aclObject, string[] relations, CancellationToken cancellationToken);
-
 
         /// <summary>
         /// For a direct check, we only need to know, if there is a matching row in the store.

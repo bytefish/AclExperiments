@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from C:/Users/philipp/source/repos/bytefish/AclExperiments//RebacExperiments/AclExperiment.CheckExpand/Parser/UsersetRewrite.g4 by ANTLR 4.13.1
+// Generated from C:/Users/philipp/source/repos/bytefish/AclExperiments//src/AclExperiments/Parser/UsersetRewrite.g4 by ANTLR 4.13.1
 
 // Unreachable code detected
 #pragma warning disable 0162
@@ -19,7 +19,7 @@
 // Ambiguous reference in cref attribute
 #pragma warning disable 419
 
-namespace AclExperiment.CheckExpand.Parser.Generated {
+namespace AclExperiments.Parser.Generated {
 #pragma warning disable 3021
 using System;
 using System.IO;
@@ -396,4 +396,4 @@ public partial class UsersetRewriteLexer : Lexer {
 
 
 }
-} // namespace AclExperiment.CheckExpand.Parser.Generated
+} // namespace AclExperiments.Parser.Generated

@@ -1,4 +1,6 @@
-﻿namespace AclExperiment.CheckExpand.Expressions
+﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+namespace AclExperiments.Expressions
 {
     /// <summary>
     /// Each tupleset specifies keys of a set of relation tuples. The set can include a single tuple key, or 

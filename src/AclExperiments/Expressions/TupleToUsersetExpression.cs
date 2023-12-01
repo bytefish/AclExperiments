@@ -1,4 +1,6 @@
-﻿namespace AclExperiment.CheckExpand.Expressions
+﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+namespace AclExperiments.Expressions
 {
     /// <summary>
     ///  Computes a tupleset (§2.4.1) from the input object, fetches relation tuples matching the tupleset, and computes 

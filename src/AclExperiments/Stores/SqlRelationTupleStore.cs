@@ -1,16 +1,21 @@
-﻿using AclExperiment.CheckExpand.Database;
-using AclExperiment.CheckExpand.Database.Model;
-using AclExperiment.CheckExpand.Models;
-using AclExperiment.CheckExpand.Utils;
+﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using AclExperiments.Database;
+using AclExperiments.Database.Model;
+using AclExperiments.Models;
+using AclExperiments.Utils;
 using Microsoft.EntityFrameworkCore;
 
-namespace AclExperiment.CheckExpand.Stores
+namespace AclExperiments.Stores
 {
+    /// <summary>
+    /// EntityFramework Core-based implementation of a <see cref="IRelationTupleStore"/>.
+    /// </summary>
     public class SqlRelationTupleStore : IRelationTupleStore
     {
         private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
 
-        public SqlRelationTupleStore(IDbContextFactory<ApplicationDbContext> dbContextFactory) 
+        public SqlRelationTupleStore(IDbContextFactory<ApplicationDbContext> dbContextFactory)
         {
             _dbContextFactory = dbContextFactory;
         }
@@ -89,7 +94,7 @@ namespace AclExperiment.CheckExpand.Stores
             using (var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken))
             {
 
-                string? subject = null; 
+                string? subject = null;
 
                 AclSubjects.SubjectToString(query.Subject);
 
