@@ -7,6 +7,10 @@ namespace AclExperiments.Models
     /// </summary>
     public abstract record AclSubject
     {
-
+        /// <summary>
+        /// Formats the given <see cref="AclSubject"/> as a <see cref="string"/>.
+        /// </summary>
+        /// <returns>Textual Representation of the <see cref="AclSubject"/></returns>
+        public abstract string FormatString();
     }
 }

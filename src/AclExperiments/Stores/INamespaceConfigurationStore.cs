@@ -7,6 +7,25 @@ namespace AclExperiments.Stores
     public interface INamespaceConfigurationStore
     {
         /// <summary>
+        /// Adds a new Namespace Configuration.
+        /// </summary>
+        /// <param name="name">Name</param>
+        /// <param name="version">Version Number</param>
+        /// <param name="content">Content</param>
+        /// <param name="cancellationToken">CancellationToken to cancel asynchronous processing</param>
+        /// <returns>Awaitable Task</returns>
+        Task AddNamespaceConfigurationAsync(string name, int version, string content, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Removes a Namespace Configuration by Name and Version.
+        /// </summary>
+        /// <param name="name">Name</param>
+        /// <param name="version">Version</param>
+        /// <param name="cancellationToken">CancellationToken to cancel asynchronous processing</param>
+        /// <returns>Awaitable Task</returns>
+        Task RemoveNamespaceConfigurationAsync(string name, int version, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Returns the latest <see cref="NamespaceUsersetExpression"/> by its name.
         /// </summary>
         /// <param name="name">Namespace Name</param>

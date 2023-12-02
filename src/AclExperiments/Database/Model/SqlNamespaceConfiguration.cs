@@ -15,7 +15,7 @@ namespace AclExperiments.Database.Model
         /// <summary>
         /// Gets or sets the Version.
         /// </summary>
-        public int Version { get; set; }
+        public required int Version { get; set; }
 
         /// <summary>
         /// Gets or sets the Content.

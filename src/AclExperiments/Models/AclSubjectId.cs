@@ -17,7 +17,7 @@ namespace AclExperiments.Models
             return new AclSubjectId { Id = s };
         }
 
-        public string FormatString()
+        public override string FormatString()
         {
             return Id;
         }

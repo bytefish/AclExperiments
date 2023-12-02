@@ -1,10 +1,14 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using AclExperiments.Database;
+using AclExperiments.Database.Connections;
+using AclExperiments.Database.Extensions;
 using AclExperiments.Database.Model;
+using AclExperiments.Database.Query;
 using AclExperiments.Models;
 using AclExperiments.Utils;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient.Server;
+using System.Data;
+using System.Data.Common;
 
 namespace AclExperiments.Stores
 {
@@ -13,46 +17,34 @@ namespace AclExperiments.Stores
     /// </summary>
     public class SqlRelationTupleStore : IRelationTupleStore
     {
-        private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
+        private readonly ISqlConnectionFactory _sqlConnectionFactory;
 
-        public SqlRelationTupleStore(IDbContextFactory<ApplicationDbContext> dbContextFactory)
+        public SqlRelationTupleStore(ISqlConnectionFactory sqlConnectionFactory)
         {
-            _dbContextFactory = dbContextFactory;
+            _sqlConnectionFactory = sqlConnectionFactory;
         }
 
-        public async Task<List<AclRelation>> GetRelationTuplesAsync(string? @namespace, string? @object, string[]? relations, string? subject, CancellationToken cancellationToken)
+        public async Task<List<AclRelation>> GetRelationTuplesAsync(RelationTupleQuery relationTupleQuery, CancellationToken cancellationToken)
         {
-            using (var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken))
+            using (var connection = await _sqlConnectionFactory.GetDbConnectionAsync(cancellationToken).ConfigureAwait(false))
             {
-                IQueryable<SqlRelationTuple> queryable = context.SqlRelationTuples;
+                var query = new SqlQuery(connection).Proc("[Identity].[usp_RelationTuple_GetRelationTuples]")
+                    .Param("Namespace", relationTupleQuery.Namespace)
+                    .Param("Object", relationTupleQuery.Object)
+                    .Param("Relation", relationTupleQuery.Relation)
+                    .Param("Subject", relationTupleQuery.Subject);
 
-                if (@namespace != null)
+                var tuples = new List<SqlRelationTuple>();
+
+                using (var reader = await query.ExecuteDataReaderAsync(cancellationToken).ConfigureAwait(false))
                 {
-                    queryable = queryable
-                        .Where(x => x.Namespace == @namespace);
-                }
+                    while (await reader.ReadAsync().ConfigureAwait(false))
+                    {
+                        var tuple = MapToObject(reader);
 
-                if (@object != null)
-                {
-                    queryable = queryable
-                        .Where(x => x.Object == @object);
+                        tuples.Add(tuple);
+                    }
                 }
-
-                if (relations != null)
-                {
-                    queryable = queryable
-                        .Where(x => relations.Contains(x.Relation));
-                }
-
-                if (subject != null)
-                {
-                    queryable = queryable
-                        .Where(x => EF.Functions.Like(x.Subject, subject));
-                }
-
-                var tuples = await queryable
-                    .AsNoTracking()
-                    .ToListAsync(cancellationToken);
 
                 return tuples
                     .Select(tuple => ConvertToAclRelation(tuple))
@@ -60,11 +52,80 @@ namespace AclExperiments.Stores
             }
         }
 
-        /// <summary>
-        /// Converts from a <see cref="SqlRelationTuple"/> to a <see cref="AclRelation"/>.
-        /// </summary>
-        /// <param name="sqlRelationTuple">The SQL Representation of the Relation</param>
-        /// <returns>The <see cref="AclRelation"/></returns>
+        public async Task<int> GetRelationTuplesRowCountAsync(AclObject @object, string relation, AclSubject subject, CancellationToken cancellationToken)
+        {
+            using (var connection = await _sqlConnectionFactory.GetDbConnectionAsync(cancellationToken))
+            {
+                var query = new SqlQuery(connection).Proc("[Identity].[usp_RelationTuple_GetRowCount]")
+                    .Param("Namespace", @object.Namespace)
+                    .Param("Object", @object.Id)
+                    .Param("Relation", relation)
+                    .Param("Subject", subject.FormatString())
+                    .OutParam("RowCount", SqlDbType.Int);
+
+                await query.ExecuteNonQueryAsync(cancellationToken);
+
+                return query.GetOutParam<int>("Count");
+            }
+        }
+
+        public async Task<List<AclSubjectSet>> GetSubjectSetsAsync(AclObject @object, string relation, CancellationToken cancellationToken)
+        {
+            using (var connection = await _sqlConnectionFactory.GetDbConnectionAsync(cancellationToken).ConfigureAwait(false))
+            {
+                var query = new SqlQuery(connection).Proc("[Identity].[usp_RelationTuple_GetSubjectSets]")
+                    .Param("Namespace", @object.Namespace)
+                    .Param("Object", @object.Id)
+                    .Param("Relation", relation);
+
+                var tuples = new List<SqlRelationTuple>();
+
+                using (var reader = await query.ExecuteDataReaderAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    while (await reader.ReadAsync().ConfigureAwait(false))
+                    {
+                        var tuple = MapToObject(reader);
+
+                        tuples.Add(tuple);
+                    }
+                }
+
+                return tuples.Select(x => AclSubjectSet.FromString(x.Subject)).ToList();
+            }
+        }
+
+        public async Task AddRelationTuplesAsync(ICollection<AclRelation> aclRelations, CancellationToken cancellationToken)
+        {
+            var sqlRelationTuples = aclRelations
+                .Select(aclRelation => ConvertToSqlRelationTuple(aclRelation))
+                .ToList();
+
+            using (var connection = await _sqlConnectionFactory.GetDbConnectionAsync(cancellationToken).ConfigureAwait(false))
+            {
+                var query = new SqlQuery(connection).Proc("[Identity].[usp_RelationTuple_BulkInsert]")
+                    .Tvp("RelationTuples", "[Identity].[udt_RelationTupleType]", ToSqlDataRecords(sqlRelationTuples))
+                    .ExecuteNonQueryAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+            }
+        }
+
+        public async Task RemoveRelationTuplesAsync(ICollection<AclRelation> aclRelations, CancellationToken cancellationToken)
+        {
+            // usp_RelationTuple_BulkDelete
+            var sqlRelationTuples = aclRelations
+                .Select(aclRelation => ConvertToSqlRelationTuple(aclRelation))
+                .ToList();
+
+            using (var connection = await _sqlConnectionFactory.GetDbConnectionAsync(cancellationToken).ConfigureAwait(false))
+            {
+                var query = new SqlQuery(connection).Proc("[Identity].[usp_RelationTuple_BulkDelete]")
+                    .Tvp("RelationTuples", "[Identity].[udt_RelationTupleType]", ToSqlDataRecords(sqlRelationTuples))
+                    .ExecuteNonQueryAsync(cancellationToken)
+                    .ConfigureAwait(false);
+            }
+        }
+
         private static AclRelation ConvertToAclRelation(SqlRelationTuple sqlRelationTuple)
         {
             var @object = new AclObject
@@ -83,44 +144,59 @@ namespace AclExperiments.Stores
             };
         }
 
-        /// <summary>
-        /// Returns the number of exact matches for a given <see cref="AclRelation"/>.
-        /// </summary>
-        /// <param name="relation">The <see cref="AclRelation"/> to query for</param>
-        /// <param name="cancellationToken">CancellationToken to cancel asynchronous processing</param>
-        /// <returns></returns>
-        public async Task<int> GetRelationTuplesRowCountAsync(RelationTupleQuery query, CancellationToken cancellationToken)
+        private static SqlRelationTuple ConvertToSqlRelationTuple(AclRelation aclRelation)
         {
-            using (var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken))
+            return new SqlRelationTuple
             {
-
-                string? subject = null;
-
-                AclSubjects.SubjectToString(query.Subject);
-
-                int count = await context.SqlRelationTuples
-                    .Where(x => x.Namespace == query.Object.Namespace)
-                    .Where(x => x.Object == query.Object.Id)
-                    .Where(x => query.Relations.Contains(x.Relation))
-                    .Where(x => x.Subject == subject)
-                    .CountAsync(cancellationToken);
-
-                return count;
-            }
+                Namespace = aclRelation.Object.Namespace,
+                Object = aclRelation.Object.Id,
+                Relation = aclRelation.Relation,
+                Subject = aclRelation.Subject.FormatString()
+            };
         }
 
-        public async Task<List<AclSubjectSet>> GetSubjectSetsAsync(AclObject aclObject, string[] relations, CancellationToken cancellationToken)
+        private static SqlRelationTuple MapToObject(DbDataReader source)
         {
-            using (var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken))
+            return new SqlRelationTuple
             {
-                List<SqlRelationTuple> tuples = await context.SqlRelationTuples
-                    .Where(x => x.Namespace == aclObject.Namespace
-                        && x.Object == aclObject.Id
-                        && relations.Contains(x.Relation)
-                        && EF.Functions.Like("_%%:_%%#_%%", x.Subject))
-                    .ToListAsync(cancellationToken);
+                Id = source.GetInt32("RelationTupleID"),
+                Namespace = source.GetString("Namespace"),
+                Object = source.GetString("Object"),
+                Relation = source.GetString("Relation"),
+                Subject = source.GetString("Subject"),
+                LastEditedBy = source.GetInt32("LastEditedBy"),
+                RowVersion = source.GetByteArray("RowVersion"),
+                ValidFrom = source.GetNullableDateTime("ValidFrom"),
+                ValidTo = source.GetNullableDateTime("ValidTo")
+            };
+        }
 
-                return tuples.Select(x => AclSubjectSet.FromString(x.Subject)).ToList();
+        private static IEnumerable<SqlDataRecord> ToSqlDataRecords(IEnumerable<SqlRelationTuple> tuples)
+        {
+            SqlDataRecord sdr = new SqlDataRecord(
+                new SqlMetaData("RelationTupleID", SqlDbType.Int),
+                new SqlMetaData("Namespace", SqlDbType.NVarChar),
+                new SqlMetaData("Object", SqlDbType.NVarChar),
+                new SqlMetaData("Relation", SqlDbType.NVarChar),
+                new SqlMetaData("Subject", SqlDbType.NVarChar),
+                new SqlMetaData("LastEditedBy", SqlDbType.Int),
+                new SqlMetaData("RowVersion", SqlDbType.Binary),
+                new SqlMetaData("ValidFrom", SqlDbType.DateTime2),
+                new SqlMetaData("ValidTo", SqlDbType.DateTime2));
+
+            foreach (var tuple in tuples)
+            {
+                sdr.SetNullableInt32(0, tuple.Id);
+                sdr.SetString(1, tuple.Namespace);
+                sdr.SetString(2, tuple.Object);
+                sdr.SetString(3, tuple.Relation);
+                sdr.SetString(4, tuple.Subject);
+                sdr.SetInt32(5, tuple.LastEditedBy);
+                sdr.SetNullableBytes(6, tuple.RowVersion);
+                sdr.SetNullableDateTime(7, tuple.ValidFrom);
+                sdr.SetNullableDateTime(8, tuple.ValidTo);
+
+                yield return sdr;
             }
         }
     }

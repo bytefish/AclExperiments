@@ -8,18 +8,23 @@ namespace AclExperiments.Models
     public record RelationTupleQuery
     {
         /// <summary>
+        /// Gets or sets the Namespace.
+        /// </summary>
+        public string? Namespace { get; set; }
+
+        /// <summary>
         /// Gets or sets the Object.
         /// </summary>
-        public required AclObject Object { get; set; }
+        public string? Object { get; set; }
 
         /// <summary>
         /// Gets or sets the Relations.
         /// </summary>
-        public required string[] Relations { get; set; }
+        public string? Relation { get; set; }
 
         /// <summary>
         /// Gets or sets the Subject.
         /// </summary>
-        public required AclSubject Subject { get; set; }
+        public string? Subject { get; set; }
     }
 }

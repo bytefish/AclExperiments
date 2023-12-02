@@ -26,7 +26,7 @@ namespace AclExperiments.Models
         /// Formats the <see cref="AclSubjectSet"/> as a <see cref="string"/> in the Google Zanzibar notation.
         /// </summary>
         /// <returns>The textual SubjectSet representation</returns>
-        public string FormatString()
+        public override string FormatString()
         {
             return string.Format("{0}:{1}#{2}", Namespace, Object, Relation);
         }

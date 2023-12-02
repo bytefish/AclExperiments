@@ -1,14 +1,15 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using AclExperiments.Tests.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
 namespace RebacExperiments.Server.Api.Tests
 {
-    public class AclServiceTests : TransactionalTestBase
+    public class AclServiceTests : IntegrationTestBase
     {
 
-        
+
         ///// <summary>
         ///// In this test we create a <see cref="SqlUser"/> (user) and a <see cref="UserTask"/> (task). The 'user' is member of 
         ///// a <see cref="Team"/> (team). The 'user' is also a member of an <see cref="Organization"/> (oganization). Members 
@@ -121,7 +122,7 @@ namespace RebacExperiments.Server.Api.Tests
         //        UserTaskPriority = UserTaskPriorityEnum.High,
         //        UserTaskStatus = UserTaskStatusEnum.InProgress
         //    };
-            
+
         //    var task2 = new UserTask
         //    {
         //        Title = "Task2",
@@ -141,16 +142,20 @@ namespace RebacExperiments.Server.Api.Tests
         //    // Act
         //    var isOwnerOfTask1 = await _applicationDbContext.CheckUserObject(user.Id, task1, Relations.Owner, default);
         //    var isViewerOfTask1 = await _applicationDbContext.CheckUserObject(user.Id, task1, Relations.Viewer, default);
-            
+
         //    var isOwnerOfTask2 = await _applicationDbContext.CheckUserObject(user.Id, task2, Relations.Owner, default);
         //    var isViewerOfTask2 = await _applicationDbContext.CheckUserObject(user.Id, task2, Relations.Viewer, default);
 
         //    // Assert
         //    Assert.AreEqual(false, isOwnerOfTask1);
         //    Assert.AreEqual(true, isViewerOfTask1);  
-            
+
         //    Assert.AreEqual(true, isOwnerOfTask2);
         //    Assert.AreEqual(false, isViewerOfTask2);           
         //}
+        public override void RegisterServices(IServiceCollection services)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

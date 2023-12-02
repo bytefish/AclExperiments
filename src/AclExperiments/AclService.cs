@@ -3,6 +3,7 @@
 using AclExperiments.Expressions;
 using AclExperiments.Models;
 using AclExperiments.Stores;
+using AclExperiments.Utils;
 using Microsoft.Extensions.Logging;
 
 namespace AclExperiments
@@ -143,21 +144,10 @@ namespace AclExperiments
                 Id = @object,
             };
 
-            var query = new RelationTupleQuery
-            {
-                Object = aclObject,
-                Relations =
-                [
-                    relation
-                ],
-                Subject = new AclSubjectId
-                {
-                    Id = user
-                },
-            };
+            var aclSubject = AclSubjects.SubjectFromString(user);
 
             var count = await _relationTupleStore
-                .GetRelationTuplesRowCountAsync(query, cancellationToken)
+                .GetRelationTuplesRowCountAsync(aclObject, relation, aclSubject, cancellationToken)
                 .ConfigureAwait(false);
 
             if (count > 0)
@@ -166,7 +156,7 @@ namespace AclExperiments
             }
 
             var subjestSets = await _relationTupleStore
-                .GetSubjectSetsAsync(aclObject, [relation], cancellationToken)
+                .GetSubjectSetsAsync(aclObject, relation, cancellationToken)
                 .ConfigureAwait(false);
 
             foreach (var subjectSet in subjestSets)
@@ -206,7 +196,7 @@ namespace AclExperiments
                 };
 
                 var subjects = await _relationTupleStore
-                    .GetSubjectSetsAsync(aclObject, [tupleToUsersetExpression.TuplesetExpression.Relation], cancellationToken)
+                    .GetSubjectSetsAsync(aclObject, tupleToUsersetExpression.TuplesetExpression.Relation, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (subjects.Count == 0)
@@ -342,8 +332,15 @@ namespace AclExperiments
 
         public async Task<SubjectTree> ExpandThisAsync(ThisUsersetExpression expression, string @namespace, string @object, string relation, int depth, CancellationToken cancellationToken)
         {
+            var query = new RelationTupleQuery
+            {
+                Namespace = @namespace,
+                Object = @object,
+                Relation = relation
+            };
+
             var tuples = await _relationTupleStore
-                .GetRelationTuplesAsync(@namespace, @object, [relation], null, cancellationToken)
+                .GetRelationTuplesAsync(query, cancellationToken)
                 .ConfigureAwait(false);
 
             var children = new List<SubjectTree>();
@@ -416,8 +413,15 @@ namespace AclExperiments
                 rr = relation;
             }
 
+            var query = new RelationTupleQuery
+            {
+                Namespace = @namespace,
+                Object = @object,
+                Relation = rr
+            };
+
             var tuples = await _relationTupleStore
-                .GetRelationTuplesAsync(@namespace, @object, [rr], null, cancellationToken)
+                .GetRelationTuplesAsync(query, cancellationToken)
                 .ConfigureAwait(false);
 
             var children = new List<SubjectTree>();

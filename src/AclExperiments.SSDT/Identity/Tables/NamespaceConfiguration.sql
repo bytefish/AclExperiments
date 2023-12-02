@@ -2,7 +2,7 @@
     [NamespaceConfigurationID]      INT                                         CONSTRAINT [DF_Identity_NamespaceConfiguration_NamespaceConfigurationID] DEFAULT (NEXT VALUE FOR [Identity].[sq_NamespaceConfiguration]) NOT NULL,
     [Name]                          NVARCHAR(255)                               NOT NULL,
     [Version]                       INT                                         NOT NULL,
-    [Content]                       NVARCHAR(255)                               NOT NULL,
+    [Content]                       NVARCHAR(MAX)                               NOT NULL,
     [RowVersion]                    ROWVERSION                                  NULL,
     [LastEditedBy]                  INT                                         NOT NULL,
     [ValidFrom]                     DATETIME2 (7) GENERATED ALWAYS AS ROW START NOT NULL,

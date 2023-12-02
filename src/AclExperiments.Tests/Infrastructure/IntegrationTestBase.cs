@@ -1,21 +1,17 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using AclExperiments;
 using AclExperiments.Database;
-using AclExperiments.Stores;
-using LayeredArchitecture.Shared.Data.Transactions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using System.Transactions;
 
 namespace AclExperiments.Tests.Infrastructure
 {
     /// <summary>
     /// Will be used by all integration tests.
     /// </summary>
-    public class TransactionalTestBase
+    public abstract class IntegrationTestBase
     {
         /// <summary>
         /// Shared Configuration for all tests.
@@ -25,17 +21,12 @@ namespace AclExperiments.Tests.Infrastructure
         /// <summary>
         /// Shared Services for all tests.
         /// </summary>
-        protected readonly IServiceCollection _services;
-
-        /// <summary>
-        /// <see cref="TransactionScope"/> that all database calls enlist to
-        /// </summary>
-        private TransactionScope _transactionScope;
+        protected readonly IServiceProvider _services;
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        public TransactionalTestBase()
+        public IntegrationTestBase()
         {
             _configuration = BuildConfiguration();
             _services = BuildServices(_configuration);
@@ -57,52 +48,37 @@ namespace AclExperiments.Tests.Infrastructure
         /// </summary>
         /// <returns>An awaitable Task</returns>
         [SetUp]
-        protected void Setup()
+        protected async Task SetupAsync()
         {
-            OnSetupBeforeTransaction();
-            _transactionScope = TransactionScopeManager.CreateTransactionScope(new TransactionSettings());
-            OnSetupInTransaction();
-        }
+            await OnSetupBeforeCleanupAsync();
 
-        /// <summary>
-        /// The TearDown called by NUnit to rollback the transaction.
-        /// </summary>
-        /// <returns>An awaitable Task</returns>
-        [TearDown]
-        protected void Teardown()
-        {
-            OnTearDownInTransaction();
-            _transactionScope.Dispose(); // Rolls back all changes ...
-            OnTearDownAfterTransaction();
+            using (var context = await _services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>().CreateDbContextAsync())
+            {
+                await context.Database.ExecuteSqlRawAsync("EXEC [Identity].[usp_Database_ResetForTests]");
+            }
+            
+            await OnSetupAfterCleanupAsync();
         }
 
         /// <summary>
         /// Called before the transaction starts.
         /// </summary>
-        public virtual void OnSetupBeforeTransaction()
+        protected virtual Task OnSetupBeforeCleanupAsync()
         {
+            return Task.CompletedTask;
         }
 
         /// <summary>
         /// Called inside the transaction.
         /// </summary>
-        public virtual void OnSetupInTransaction()
+        protected virtual Task OnSetupAfterCleanupAsync()
         {
+            return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// Called before rolling back the transaction.
-        /// </summary>
-        public virtual void OnTearDownInTransaction()
+        protected ApplicationDbContext BuildDbContext()
         {
-
-        }
-
-        /// <summary>
-        /// Called after transaction has been rolled back.
-        /// </summary>
-        public virtual void OnTearDownAfterTransaction()
-        {
+            return _services.GetRequiredService<ApplicationDbContext>();
         }
 
         /// <summary>
@@ -113,7 +89,7 @@ namespace AclExperiments.Tests.Infrastructure
         /// <param name="configuration">A configuration provided by the appsettings.json</param>
         /// <returns>An initialized <see cref="ApplicationDbContext"/></returns>
         /// <exception cref="InvalidOperationException">Thrown when no Connection String "ApplicationDatabase" was found</exception>
-        private IServiceCollection BuildServices(IConfiguration configuration)
+        private IServiceProvider BuildServices(IConfiguration configuration)
         {
             var services = new ServiceCollection();
 
@@ -129,11 +105,9 @@ namespace AclExperiments.Tests.Infrastructure
                 x.UseSqlServer("ApplicationDatabase");
             });
 
-            services.AddSingleton<INamespaceConfigurationStore, SqlNamespaceConfigurationStore>();
-            services.AddSingleton<IRelationTupleStore, SqlRelationTupleStore>();
-            services.AddSingleton<AclService>();
-
-            return services;
+            return services.BuildServiceProvider();
         }
+
+        public abstract void RegisterServices(IServiceCollection services);
     }
 }

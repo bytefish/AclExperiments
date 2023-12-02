@@ -9,11 +9,11 @@ namespace AclExperiments.Stores
         /// <summary>
         /// Returns all SubjectSets for a given <see cref="AclObject"/> and Relation.
         /// </summary>
-        /// <param name="aclObject">ACL Object</param>
-        /// <param name="relations">Relation between Object and SubjectSets</param>
+        /// <param name="aclObject">Object</param>
+        /// <param name="relation">Relation between Object and SubjectSets</param>
         /// <param name="cancellationToken">CancellationToken to cancel asynchronous processing</param>
         /// <returns>An awaitable Task for SubjectSets</returns>
-        Task<List<AclSubjectSet>> GetSubjectSetsAsync(AclObject aclObject, string[] relations, CancellationToken cancellationToken);
+        Task<List<AclSubjectSet>> GetSubjectSetsAsync(AclObject aclObject, string relation, CancellationToken cancellationToken);
 
         /// <summary>
         /// For a direct check, we only need to know, if there is a matching row in the store.
@@ -21,17 +21,14 @@ namespace AclExperiments.Stores
         /// <param name="relation">ACL Relation between an Object and Subject</param>
         /// <param name="cancellationToken">CancellationToken to cancel asynchronous processing</param>
         /// <returns>Number of Matching Rows for the given <see cref="AclRelation"/></returns>
-        Task<int> GetRelationTuplesRowCountAsync(RelationTupleQuery query, CancellationToken cancellationToken);
+        Task<int> GetRelationTuplesRowCountAsync(AclObject aclObject, string relation, AclSubject subject, CancellationToken cancellationToken);
 
         /// <summary>
         /// Returns all RelationTuples matching the given filters.
         /// </summary>
-        /// <param name="namespace">Namespace</param>
-        /// <param name="object">Object</param>
-        /// <param name="relations">Relations</param>
-        /// <param name="subject">Subject</param>
+        /// <param name="query">Filter Values for the Query</param>
         /// <param name="cancellationToken">CancellationToken to cancel asynchronous processing</param>
         /// <returns></returns>
-        Task<List<AclRelation>> GetRelationTuplesAsync(string? @namespace, string? @object, string[]? relations, string? subject, CancellationToken cancellationToken);
+        Task<List<AclRelation>> GetRelationTuplesAsync(RelationTupleQuery query, CancellationToken cancellationToken);
     }
 }
