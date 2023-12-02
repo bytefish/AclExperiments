@@ -81,14 +81,14 @@ namespace AclExperiments.Stores
             }
         }
 
-        public async Task AddNamespaceConfigurationAsync(string name, int version, string content, CancellationToken cancellationToken)
+        public async Task AddNamespaceConfigurationAsync(string name, int version, string content, int userId, CancellationToken cancellationToken)
         {
-            var namespaceToInsert = new SqlNamespaceConfiguration { Name = name, Version = version, Content = content };
+            var namespaceToInsert = new SqlNamespaceConfiguration { Name = name, Version = version, Content = content, LastEditedBy = userId };
 
             using (var connection = await _sqlConnectionFactory.GetDbConnectionAsync(cancellationToken).ConfigureAwait(false))
             {
-                var query = new SqlQuery(connection).Proc("[Identity].[usp_NamespaceConfiguration_BulkDelete]")
-                    .Tvp("NamespaceConfigurations", "[Identity].[udt_NamespaceConfigurationType]", ToSqlDataRecords([namespaceToInsert]))
+                var query = await new SqlQuery(connection).Proc("[Identity].[usp_NamespaceConfiguration_BulkInsert]")
+                    .Tvp("NamespaceConfigurations", "[Identity].[udt_NamespaceConfigurationType]", ToSqlDataRecords([ namespaceToInsert ]))
                     .ExecuteNonQueryAsync(cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -100,7 +100,7 @@ namespace AclExperiments.Stores
 
             using (var connection = await _sqlConnectionFactory.GetDbConnectionAsync(cancellationToken).ConfigureAwait(false))
             {
-                var query = new SqlQuery(connection).Proc("[Identity].[usp_NamespaceConfiguration_BulkDelete]")
+                var query = await new SqlQuery(connection).Proc("[Identity].[usp_NamespaceConfiguration_BulkDelete]")
                     .Tvp("NamespaceConfigurations", "[Identity].[udt_NamespaceConfigurationType]", ToSqlDataRecords([ namespaceToDelete ]))
                     .ExecuteNonQueryAsync(cancellationToken)
                     .ConfigureAwait(false);
@@ -122,28 +122,28 @@ namespace AclExperiments.Stores
             };
         }
 
-        private static IEnumerable<SqlDataRecord> ToSqlDataRecords(IEnumerable<SqlNamespaceConfiguration> tuples)
+        private static IEnumerable<SqlDataRecord> ToSqlDataRecords(IEnumerable<SqlNamespaceConfiguration> configurations)
         {
             SqlDataRecord sdr = new SqlDataRecord(
                 new SqlMetaData("NamespaceConfigurationID", SqlDbType.Int),
-                new SqlMetaData("Name", SqlDbType.NVarChar),
-                new SqlMetaData("Content", SqlDbType.NVarChar),
+                new SqlMetaData("Name", SqlDbType.NVarChar, 255),
+                new SqlMetaData("Content", SqlDbType.NVarChar, 4000),
                 new SqlMetaData("Version", SqlDbType.Int),
+                new SqlMetaData("RowVersion", SqlDbType.VarBinary, 8),
                 new SqlMetaData("LastEditedBy", SqlDbType.Int),
-                new SqlMetaData("RowVersion", SqlDbType.Binary),
                 new SqlMetaData("ValidFrom", SqlDbType.DateTime2),
                 new SqlMetaData("ValidTo", SqlDbType.DateTime2));
 
-            foreach (var tuple in tuples)
+            foreach (var configuration in configurations)
             {
-                sdr.SetNullableInt32(0, tuple.Id);
-                sdr.SetString(1, tuple.Name);
-                sdr.SetString(2, tuple.Content);
-                sdr.SetInt32(3, tuple.Version);
-                sdr.SetInt32(4, tuple.LastEditedBy);
-                sdr.SetNullableBytes(5, tuple.RowVersion);
-                sdr.SetNullableDateTime(6, tuple.ValidFrom);
-                sdr.SetNullableDateTime(7, tuple.ValidTo);
+                sdr.SetNullableInt32(0, configuration.Id);
+                sdr.SetString(1, configuration.Name);
+                sdr.SetString(2, configuration.Content);
+                sdr.SetInt32(3, configuration.Version);
+                sdr.SetNullableBytes(4, configuration.RowVersion);
+                sdr.SetInt32(5, configuration.LastEditedBy);
+                sdr.SetNullableDateTime(6, configuration.ValidFrom);
+                sdr.SetNullableDateTime(7, configuration.ValidTo);
 
                 yield return sdr;
             }

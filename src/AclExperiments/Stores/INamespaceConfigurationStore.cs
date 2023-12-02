@@ -12,9 +12,10 @@ namespace AclExperiments.Stores
         /// <param name="name">Name</param>
         /// <param name="version">Version Number</param>
         /// <param name="content">Content</param>
+        /// <param name="userId">User ID</param>
         /// <param name="cancellationToken">CancellationToken to cancel asynchronous processing</param>
         /// <returns>Awaitable Task</returns>
-        Task AddNamespaceConfigurationAsync(string name, int version, string content, CancellationToken cancellationToken);
+        Task AddNamespaceConfigurationAsync(string name, int version, string content, int userId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes a Namespace Configuration by Name and Version.

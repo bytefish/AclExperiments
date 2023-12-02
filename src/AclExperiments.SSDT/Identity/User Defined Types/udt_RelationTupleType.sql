@@ -5,7 +5,7 @@
    ,[Object]                NVARCHAR(50)
    ,[Relation]              NVARCHAR(50)
    ,[Subject]               NVARCHAR(50)
-   ,[RowVersion]            ROWVERSION   
+   ,[RowVersion]            VARBINARY(8)  
    ,[LastEditedBy]          INT          
    ,[ValidFrom]             DATETIME2 (7)
    ,[ValidTo]               DATETIME2 (7)

@@ -5,9 +5,9 @@ AS BEGIN
     SET NOCOUNT ON;
 
     INSERT INTO 
-        [Identity].[NamespaceConfiguration]([NamespaceConfigurationID], [Name], [Version], [Content], [LastEditedBy])
+        [Identity].[NamespaceConfiguration]([Name], [Version], [Content], [LastEditedBy])
     SELECT 
-        [NamespaceConfigurationID],[Name] ,[Version], [Content], [LastEditedBy]     
+        [Name] ,[Version], [Content], [LastEditedBy]     
     FROM 
         @NamespaceConfigurations;
 

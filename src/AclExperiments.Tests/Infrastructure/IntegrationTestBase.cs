@@ -1,7 +1,7 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using AclExperiments.Database;
-using Microsoft.EntityFrameworkCore;
+using AclExperiments.Database.Connections;
+using AclExperiments.Database.Query;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -52,9 +52,12 @@ namespace AclExperiments.Tests.Infrastructure
         {
             await OnSetupBeforeCleanupAsync();
 
-            using (var context = await _services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>().CreateDbContextAsync())
+            using (var connection = await _services.GetRequiredService<ISqlConnectionFactory>()
+                .GetDbConnectionAsync(default)
+                .ConfigureAwait(false))
             {
-                await context.Database.ExecuteSqlRawAsync("EXEC [Identity].[usp_Database_ResetForTests]");
+                await new SqlQuery(connection).Proc("[Identity].[usp_Database_ResetForTests]")
+                    .ExecuteNonQueryAsync(default);
             }
             
             await OnSetupAfterCleanupAsync();
@@ -76,11 +79,6 @@ namespace AclExperiments.Tests.Infrastructure
             return Task.CompletedTask;
         }
 
-        protected ApplicationDbContext BuildDbContext()
-        {
-            return _services.GetRequiredService<ApplicationDbContext>();
-        }
-
         /// <summary>
         /// Builds an <see cref="ApplicationDbContext"/> based on a given Configuration. We 
         /// expect the Configuration to have a Connection String "ApplicationDatabase" to 
@@ -93,7 +91,7 @@ namespace AclExperiments.Tests.Infrastructure
         {
             var services = new ServiceCollection();
 
-            services.AddDbContextFactory<ApplicationDbContext>(x =>
+            services.AddSingleton<ISqlConnectionFactory>((sp) => 
             {
                 var connectionString = configuration.GetConnectionString("ApplicationDatabase");
 
@@ -102,8 +100,10 @@ namespace AclExperiments.Tests.Infrastructure
                     throw new InvalidOperationException($"No Connection String named 'ApplicationDatabase' found in appsettings.json");
                 }
 
-                x.UseSqlServer("ApplicationDatabase");
+                return new SqlServerConnectionFactory(connectionString);
             });
+
+            RegisterServices(services);
 
             return services.BuildServiceProvider();
         }
