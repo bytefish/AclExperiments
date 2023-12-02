@@ -4,7 +4,7 @@ using AclExperiments.Database.Connections;
 using AclExperiments.Database.Query;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace AclExperiments.Tests.Infrastructure
 {
@@ -47,8 +47,8 @@ namespace AclExperiments.Tests.Infrastructure
         /// The SetUp called by NUnit to start the transaction.
         /// </summary>
         /// <returns>An awaitable Task</returns>
-        [SetUp]
-        protected async Task SetupAsync()
+        [TestInitialize]
+        public async Task TestInitializeAsync()
         {
             await OnSetupBeforeCleanupAsync();
 
@@ -57,7 +57,8 @@ namespace AclExperiments.Tests.Infrastructure
                 .ConfigureAwait(false))
             {
                 await new SqlQuery(connection).Proc("[Identity].[usp_Database_ResetForTests]")
-                    .ExecuteNonQueryAsync(default);
+                    .ExecuteNonQueryAsync(default)
+                    .ConfigureAwait(false);
             }
             
             await OnSetupAfterCleanupAsync();
@@ -90,18 +91,6 @@ namespace AclExperiments.Tests.Infrastructure
         private IServiceProvider BuildServices(IConfiguration configuration)
         {
             var services = new ServiceCollection();
-
-            services.AddSingleton<ISqlConnectionFactory>((sp) => 
-            {
-                var connectionString = configuration.GetConnectionString("ApplicationDatabase");
-
-                if (connectionString == null)
-                {
-                    throw new InvalidOperationException($"No Connection String named 'ApplicationDatabase' found in appsettings.json");
-                }
-
-                return new SqlServerConnectionFactory(connectionString);
-            });
 
             RegisterServices(services);
 

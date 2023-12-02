@@ -2,7 +2,6 @@
 
 using AclExperiments.Tests.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using NUnit.Framework;
 
 namespace RebacExperiments.Server.Api.Tests
 {

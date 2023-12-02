@@ -28,7 +28,25 @@ namespace AclExperiments.Stores
         /// </summary>
         /// <param name="query">Filter Values for the Query</param>
         /// <param name="cancellationToken">CancellationToken to cancel asynchronous processing</param>
-        /// <returns></returns>
+        /// <returns>All Relation Tuples matching the Query</returns>
         Task<List<AclRelation>> GetRelationTuplesAsync(RelationTupleQuery query, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Adds a list of <see cref="AclRelation"/> tuples to the database.
+        /// </summary>
+        /// <param name="aclRelations">Relation tuples to insert</param>
+        /// <param name="userId">UserID adding the tuple</param>
+        /// <param name="cancellationToken">CancellationToken to cancel asynchronous processing</param>
+        /// <returns>Awaitable Task</returns>
+        Task AddRelationTuplesAsync(ICollection<AclRelation> aclRelations, int userId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Removes a list of <see cref="AclRelation"/> tuples from the database.
+        /// </summary>
+        /// <param name="aclRelations">Relation Tuples to delete</param>
+        /// <param name="userId">UserID removing the tuple</param>
+        /// <param name="cancellationToken">CancellationToken to cancel asynchronous processing</param>
+        /// <returns>Awaitable Task</returns>
+        Task RemoveRelationTuplesAsync(ICollection<AclRelation> aclRelations, int userId, CancellationToken cancellationToken);
     }
 }

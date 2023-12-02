@@ -94,10 +94,10 @@ namespace AclExperiments.Stores
             }
         }
 
-        public async Task AddRelationTuplesAsync(ICollection<AclRelation> aclRelations, CancellationToken cancellationToken)
+        public async Task AddRelationTuplesAsync(ICollection<AclRelation> aclRelations, int userId, CancellationToken cancellationToken)
         {
             var sqlRelationTuples = aclRelations
-                .Select(aclRelation => ConvertToSqlRelationTuple(aclRelation))
+                .Select(aclRelation => ConvertToSqlRelationTuple(aclRelation, userId))
                 .ToList();
 
             using (var connection = await _sqlConnectionFactory.GetDbConnectionAsync(cancellationToken).ConfigureAwait(false))
@@ -110,11 +110,11 @@ namespace AclExperiments.Stores
             }
         }
 
-        public async Task RemoveRelationTuplesAsync(ICollection<AclRelation> aclRelations, CancellationToken cancellationToken)
+        public async Task RemoveRelationTuplesAsync(ICollection<AclRelation> aclRelations, int userId, CancellationToken cancellationToken)
         {
             // usp_RelationTuple_BulkDelete
             var sqlRelationTuples = aclRelations
-                .Select(aclRelation => ConvertToSqlRelationTuple(aclRelation))
+                .Select(aclRelation => ConvertToSqlRelationTuple(aclRelation, userId))
                 .ToList();
 
             using (var connection = await _sqlConnectionFactory.GetDbConnectionAsync(cancellationToken).ConfigureAwait(false))
@@ -144,14 +144,15 @@ namespace AclExperiments.Stores
             };
         }
 
-        private static SqlRelationTuple ConvertToSqlRelationTuple(AclRelation aclRelation)
+        private static SqlRelationTuple ConvertToSqlRelationTuple(AclRelation aclRelation, int userId)
         {
             return new SqlRelationTuple
             {
                 Namespace = aclRelation.Object.Namespace,
                 Object = aclRelation.Object.Id,
                 Relation = aclRelation.Relation,
-                Subject = aclRelation.Subject.FormatString()
+                Subject = aclRelation.Subject.FormatString(),
+                LastEditedBy = userId
             };
         }
 
