@@ -1,325 +1,312 @@
-# Experimenting with Relationship-based Access Control #
+# Experimenting with Relationship-based Access Control: Implementing the Google Zanzibar Check API and Expand API #
 
-[written an article about the Google Zanzibar Data Model]: https://www.bytefish.de/blog/relationship_based_acl_with_google_zanzibar.html
-
-The Google Drive app starts and a moment later *your files* appear. It's magic. But have you 
-ever wondered what's *your files* actually? How do these services actually know, which files 
-*you are allowed* to see?
-
-Are you part of an *Organization* and you are allowed to *view* all their files? Have you been 
-assigned to a *Team*, that's allowed to *view* or *edit* files? Has someone shared *their files* 
-with *you* as a *User*?
-
-So in 2019 Google has lifted the curtain and has published a paper on *Google Zanzibar*, which 
-is Google's central solution for providing authorization among its many services:
+*Google Zanzibar* is Google's central solution for providing authorization among its many services 
+and described at:
 
 * [https://research.google/pubs/pub48190/](https://research.google/pubs/pub48190/)
 
-The keyword here is *Relationship-based Access Control*, which is ...
+This Git Repository implements a highly simplified version of the Google Zanzibar `Check API` 
+and `Expand API` to see how to work with Fine Grained Permission for Authorization and maybe 
+learn something along the way.
 
-> [...] an authorization paradigm where a subject's permission to access a resource is defined by the 
-> presence of relationships between those subjects and resources.
+## Example ##
 
-I have previously [written an article about the Google Zanzibar Data Model], and also wrote some 
-pretty nice SQL statements to make sense of the it. This repository implements Relationship-based 
-Access Control using ASP.NET Core, EntityFramework Core and Microsoft SQL Server.
+The Google Zanzibar paper describes a namespace configuration for documents. We expand on this 
+example and add a namespace configuration for folders, and see how to use the Check API and Expand 
+API implemented in the project.
 
-The blog article for this repository can be found at:
+### Namespace Configurations ###
 
-* [https://www.bytefish.de/blog/aspnetcore_rebac.html](https://www.bytefish.de/blog/aspnetcore_rebac.html)
-
-## Running the Example ##
-
-We got everything in place. We can now start the application and use Swagger to query it. But Visual Studio 2022 
-now comes with the "Endpoints Explorer" to execute HTTP Requests against HTTP endpoints. Though it's not fully-fledged 
-yet, I think it'll improve with time and it already covers a lot of use cases.
-
-You can find the Endpoints Explorer at:
-
-* `View -> Other Windows -> Endpoints Explorer`
-
-By clicking on `RebacExperiments.Server.Api.http` the HTTP script with the sample requests comes up.
-
-### The Example Setup ###
-
-We have got 2 Tasks:
-
-* `task_152`: "Sign Document"
-* `task 323`: "Call Back Philipp Wagner"
-
-And we have got two users: 
-
-* `user_philipp`: "Philipp Wagner"
-* `user_max`: "Max Mustermann"
-
-Both users are permitted to login, so they are allowed to query for data, given a permitted role and permissions.
-
-There are two Organizations:
-
-* Organization 1: "Organization #1"
-* Organization 2: "Organization #2"
-
-And 2 Roles:
-
-* `role_user`: "User" (Allowed to Query for UserTasks)
-* `role_admin`: "Administrator" (Allowed to Delete a UserTask)
-
-The Relationships between the entities are the following:
+In `Resources\doc.nsconfig` we define the namespace configuration for documents as ...
 
 ```
-The Relationship-Table is given below.
+name: "doc"
+    relation { name: "owner" }
+    
+    relation {
+        name: "editor"
 
-ObjectKey           |  ObjectNamespace  |   ObjectRelation  |   SubjectKey          |   SubjectNamespace    |   SubjectRelation
---------------------|-------------------|-------------------|-----------------------|-----------------------|-------------------
-:task_323  :        |   UserTask        |       viewer      |   :organization_1:    |       Organization    |   member
-:task_152  :        |   UserTask        |       viewer      |   :organization_1:    |       Organization    |   member
-:task_152  :        |   UserTask        |       viewer      |   :organization_2:    |       Organization    |   member
-:organization_1:    |   Organization    |       member      |   :user_philipp:      |       User            |   NULL
-:organization_2:    |   Organization    |       member      |   :user_max:          |       User            |   NULL
-:role_user:         |   Role            |       member      |   :user_philipp:      |       User            |   NULL
-:role_admin:        |   Role            |       member      |   :user_philipp:      |       User            |   NULL
-:role_user:         |   Role            |       member      |   :user_max:          |       User            |   NULL
-:task_323:          |   UserTask        |       owner       |   :user_2:            |       User            |   member
+        userset_rewrite {
+            union {
+                child { _this {} }
+                child { computed_userset { relation: "owner" } }
+            } } }
+    
+    relation {
+        name: "viewer"
+        userset_rewrite {
+            union {
+                child { _this {} }
+                child { computed_userset { relation: "editor" } }
+                child { tuple_to_userset {
+                    tupleset { 
+                        relation: "parent" 
+                    }
+                    computed_userset {
+                        object: $TUPLE_USERSET_OBJECT
+                        relation: "viewer"
+                } } }
+} } }
 ```
 
-We can draw the following conclusions here: A `member` of `organization_1` is `viewer` of `task_152` and `task_323`. A `member` 
-of `organization_2` is a `viewer` of `task_152` only. `user_philipp` is member of `organization_1`, so the user is able to see 
-both tasks as `viewer`. `user_max` is member of `organization_2`, so he is a `viewer` of `task_152` only. `user_philipp` has the 
-`User` and `Administrator` roles assigned, so he can create, query and delete a `UserTask`. `user_max` only has the `User` role 
-assigned, so he is not authorized to delete a `UserTask`. Finally `user_philipp` is also the `owner` of `task_323` so he is 
-permitted to update the data of the `UserTask`.
-
-### HTTP Endpoints Explorer Script ###
-
-We start by signing in `philipp@bytefish.de`:
+In `Resources\folder.nsconfig` we define the namespace configuration for folders as ...
 
 ```
-### Sign In "philipp@bytefish.de"
+name: "folder"
 
-POST {{RebacExperiments.Server.Api_HostAddress}}/Authentication/sign-in
-Content-Type: application/json
+relation { name: "parent" }
 
+relation { name: "owner" }
+
+relation {
+  name: "editor"
+  userset_rewrite {
+    union {
+      child { _this {} }
+      child { computed_userset { relation: "owner" } }
+}}}
+
+relation {
+  name: "viewer"
+  userset_rewrite {
+  union {
+    child { _this {} }
+    child { computed_userset { relation: "editor" } }
+}}}
+```
+
+### Tests for the Check and Expand API ###
+
+In the test we have one document `doc_1`, and two users `user_1` and `user_2`. `user_1` has a direct `viewer` 
+relation to `doc_1` . `user_2` has a `viewer` permission on folder `folder_1`. The folder `folder_1` is `parent` 
+of `doc_1`, and thus `user_2` inherits the `viewer` permission through the folders.
+
+The database contains the following relation tuples.
+
+```
+Namespace |  Object       |   Relation    |   Subject             |
+----------|---------------|---------------|-----------------------|
+doc       |   doc_1       |   viewer      |   user_1              |
+doc       |   doc_1       |   parent      |   folder:folder_1#... |
+folder    |   folder_1    |   viewer      |   user_2              |
+```
+
+In the example you can see how to add and get namespace configurations, 
+
+```csharp
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using AclExperiments.Database.Connections;
+using AclExperiments.Models;
+using AclExperiments.Stores;
+using AclExperiments.Tests.Infrastructure;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace AclExperiments.Tests
 {
-  "username": "philipp@bytefish.de",
-  "password": "5!F25GbKwU3P",
-  "rememberMe": true
+    [TestClass]
+    public class AclServiceTests : IntegrationTestBase
+    {
+        private AclService _aclService = null!;
+
+        private INamespaceConfigurationStore _namespaceConfigurationStore = null!;
+        private IRelationTupleStore _relationTupleStore = null!;
+
+        protected override Task OnSetupBeforeCleanupAsync()
+        {
+            _aclService = _services.GetRequiredService<AclService>();
+            _relationTupleStore = _services.GetRequiredService<IRelationTupleStore>();
+            _namespaceConfigurationStore = _services.GetRequiredService<INamespaceConfigurationStore>();
+
+            return Task.CompletedTask;
+        }
+
+        public override void RegisterServices(IServiceCollection services)
+        {
+            services.AddSingleton<ISqlConnectionFactory>((sp) =>
+            {
+                var connectionString = _configuration.GetConnectionString("ApplicationDatabase");
+
+                if (connectionString == null)
+                {
+                    throw new InvalidOperationException($"No Connection String named 'ApplicationDatabase' found in appsettings.json");
+                }
+
+                return new SqlServerConnectionFactory(connectionString);
+            });
+
+            services.AddSingleton<AclService>();
+            services.AddSingleton<INamespaceConfigurationStore, SqlNamespaceConfigurationStore>();
+            services.AddSingleton<IRelationTupleStore, SqlRelationTupleStore>();
+        }
+
+        #region Check API
+
+        ///// <summary>
+        /// In this test we have one document "doc_1", and two users "user_1" and "user_2". "user_1" 
+        /// has a "viewer" permission on "doc_1", because he has a direct relationto it. "user_2" has 
+        /// a viewer permission on a folder "folder_1". 
+        /// 
+        /// The folder "folder_1" is a "parent" of the document, and thus "user_2" inherits the folders 
+        /// permission through the computed userset.
+        /// 
+        /// Namespace |  Object       |   Relation    |   Subject             |
+        /// ----------|---------------|---------------|-----------------------|
+        /// doc       |   doc_1       |   viewer      |   user_1              |
+        /// doc       |   doc_1       |   parent      |   folder:folder_1#... |
+        /// folder    |   folder_1    |   viewer      |   user_2              |
+        /// </summary>
+        [TestMethod]
+        public async Task CheckAsync_CheckUserPermissions()
+        {
+            // Arrange
+            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("doc", 1, File.ReadAllText("Resources/doc.nsconfig"), 1, default);
+            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("folder", 1, File.ReadAllText("Resources/folder.nsconfig"), 1, default);
+
+            var aclRelations = new[]
+            {
+                    new AclRelation
+                    {
+                        Object = new AclObject
+                        {
+                            Namespace = "doc",
+                            Id = "doc_1"
+                        },
+                        Relation = "owner",
+                        Subject = new AclSubjectId
+                        {
+                            Id = "user_1"
+                        }
+                    },
+                    new AclRelation
+                    {
+                        Object = new AclObject
+                        {
+                            Namespace = "doc",
+                            Id = "doc_1"
+                        },
+                        Relation = "parent",
+                        Subject = new AclSubjectId
+                        {
+                            Id = "folder:folder_1#..."
+                        }
+                    },
+                    new AclRelation
+                    {
+                        Object = new AclObject
+                        {
+                            Namespace = "folder",
+                            Id = "folder_1"
+                        },
+                        Relation = "viewer",
+                        Subject = new AclSubjectId
+                        {
+                            Id = "user_2"
+                        }
+                    },
+                };
+
+            await _relationTupleStore.AddRelationTuplesAsync(aclRelations, 1, default);
+
+            // Act
+            var user_1_is_permitted = await _aclService.CheckAsync("doc", "doc_1", "viewer", "user_1", default);
+            var user_2_is_permitted = await _aclService.CheckAsync("doc", "doc_1", "viewer", "user_2", default);
+            var user_3_is_permitted = await _aclService.CheckAsync("doc", "doc_1", "viewer", "user_3", default);
+
+            // Assert
+            Assert.AreEqual(true, user_1_is_permitted);
+            Assert.AreEqual(true, user_2_is_permitted);
+            Assert.AreEqual(false, user_3_is_permitted);
+        }
+
+        #endregion Check API
+
+        #region Expand API
+
+        ///// <summary>
+        /// In this test we have one document "doc_1", and two users "user_1" and "user_2". "user_1" 
+        /// has a "viewer" permission on "doc_1", because he has a direct relationto it. "user_2" has 
+        /// a viewer permission on a folder "folder_1". 
+        /// 
+        /// The folder "folder_1" is a "parent" of the document, and thus "user_2" inherits the folders 
+        /// permission through the computed userset.
+        /// 
+        /// Namespace |  Object       |   Relation    |   Subject             |
+        /// ----------|---------------|---------------|-----------------------|
+        /// doc       |   doc_1       |   viewer      |   user_1              |
+        /// doc       |   doc_1       |   parent      |   folder:folder_1#... |
+        /// folder    |   folder_1    |   viewer      |   user_2              |
+        /// </summary>
+        [TestMethod]
+        public async Task Expand_ExpandUsersetRewrites()
+        {
+            // Arrange
+            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("doc", 1, File.ReadAllText("Resources/doc.nsconfig"), 1, default);
+            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("folder", 1, File.ReadAllText("Resources/folder.nsconfig"), 1, default);
+
+            var aclRelations = new[]
+            {
+                    new AclRelation
+                    {
+                        Object = new AclObject
+                        {
+                            Namespace = "doc",
+                            Id = "doc_1"
+                        },
+                        Relation = "owner",
+                        Subject = new AclSubjectId
+                        {
+                            Id = "user_1"
+                        }
+                    },
+                    new AclRelation
+                    {
+                        Object = new AclObject
+                        {
+                            Namespace = "doc",
+                            Id = "doc_1"
+                        },
+                        Relation = "parent",
+                        Subject = new AclSubjectId
+                        {
+                            Id = "folder:folder_1#..."
+                        }
+                    },
+                    new AclRelation
+                    {
+                        Object = new AclObject
+                        {
+                            Namespace = "folder",
+                            Id = "folder_1"
+                        },
+                        Relation = "viewer",
+                        Subject = new AclSubjectId
+                        {
+                            Id = "user_2"
+                        }
+                    },
+                };
+
+            await _relationTupleStore.AddRelationTuplesAsync(aclRelations, 1, default);
+
+            // Act
+            var subjectTree = await _aclService.ExpandAsync("doc", "doc_1", "viewer", 100, default);
+
+            // Assert
+            Assert.AreEqual(2, subjectTree.Result.Count);
+
+            var sortedSubjectTreeResults = subjectTree.Result
+                .Cast<AclSubjectId>()
+                .OrderBy(x => x.Id)
+                .ToList();
+
+            Assert.AreEqual("user_1", sortedSubjectTreeResults[0].Id);
+            Assert.AreEqual("user_2", sortedSubjectTreeResults[1].Id);
+        }
+
+        #endregion Expand API
+    }
 }
 ```
-
-Then we get all Tasks by querying `/UserTasks` endpoint:
-
-```
-### Get all UserTasks
-
-GET {{RebacExperiments.Server.Api_HostAddress}}/UserTasks
-```
-
-As expected by the example setup, the result has the `UserTask` with ID `152` and ID `323` as body:
-
-```
-[
-  {
-    "title": "Call Back",
-    "description": "Call Back Philipp Wagner",
-    "dueDateTime": null,
-    "reminderDateTime": null,
-    "completedDateTime": null,
-    "assignedTo": null,
-    "userTaskPriority": 1,
-    "userTaskStatus": 1,
-    "id": 152,
-    "rowVersion": "AAAAAAAAB\u002Bw=",
-    "lastEditedBy": 1,
-    "validFrom": "2013-01-01T00:00:00",
-    "validTo": "9999-12-31T23:59:59.9999999"
-  },
-  {
-    "title": "Sign Document",
-    "description": "You need to Sign a Document",
-    "dueDateTime": null,
-    "reminderDateTime": null,
-    "completedDateTime": null,
-    "assignedTo": null,
-    "userTaskPriority": 2,
-    "userTaskStatus": 2,
-    "id": 323,
-    "rowVersion": "AAAAAAAAB\u002B0=",
-    "lastEditedBy": 1,
-    "validFrom": "2013-01-01T00:00:00",
-    "validTo": "9999-12-31T23:59:59.9999999"
-  }
-]
-```
-
-We sign out the user `philipp@bytefish.de`:
-
-```
-### Sign Out "philipp@bytefish.de"
-
-POST {{RebacExperiments.Server.Api_HostAddress}}/Authentication/sign-out
-```
-
-And we query the `/UserTasks` endpoint to get the list of `UserTask` entities: 
-
-```
-### Check for 401 Unauthorized when not Authenticated
-
-GET {{RebacExperiments.Server.Api_HostAddress}}/UserTasks
-```
-
-The Backend correctly returns a `401` Status Code, because the user isn't authenticated:
-
-```
-Status: 401 UnauthorizedTime: 7,48 msSize: 0 bytes
-```
-
-Then we sign in the user `max@mustermann.local`:
-
-```
-### Sign In as "max@mustermann.local"
-
-POST {{RebacExperiments.Server.Api_HostAddress}}/Authentication/sign-in
-Content-Type: application/json
-
-{
-  "username": "max@mustermann.local",
-  "password": "5!F25GbKwU3P",
-  "rememberMe": true
-}
-```
-
-And querying the `/UserTasks` endpoint:
-
-```
-### Get all UserTasks for "max@mustermann.local"
-
-GET {{RebacExperiments.Server.Api_HostAddress}}/UserTasks
-```
-
-Returns only `UserTask` with ID `152`, as expected:
-
-```
-[
-  {
-    "title": "Call Back",
-    "description": "Call Back Philipp Wagner",
-    "dueDateTime": null,
-    "reminderDateTime": null,
-    "completedDateTime": null,
-    "assignedTo": null,
-    "userTaskPriority": 1,
-    "userTaskStatus": 1,
-    "id": 152,
-    "rowVersion": "AAAAAAAAB\u002Bw=",
-    "lastEditedBy": 1,
-    "validFrom": "2013-01-01T00:00:00",
-    "validTo": "9999-12-31T23:59:59.9999999"
-  }
-]
-```
-
-Since we are not the `owner` of the Task `152`, we shouldn't be able to delete it:
-
-```
-### Delete UserTask 152 as "max@mustermann.local" (he is not the owner)
-DELETE {{RebacExperiments.Server.Api_HostAddress}}/UserTasks/152
-```
-
-And as expected, we are not permitted to delete the task:
-
-```
-Status: 403 ForbiddenTime: 190,91 msSize: 1154 bytes
-
-application/problem+json; charset=utf-8, 1154 bytes
-
-{
-  "type": "EntityUnauthorizedAccessException",
-  "title": "EntityUnauthorizedAccess (User = 7, Entity = UserTask, EntityID = 152)",
-  "status": 403,
-  "instance": "/UserTasks/152",
-  "error-code": "Entity:000002",
-  "trace-id": "0HMUJJ9QPSEE0:00000001",
-  "exception": "RebacExperiments.Server.Api.Infrastructure.Exceptions.EntityUnauthorizedAccessException: Exception of type \u0027RebacExperiments.Server.Api.Infrastructure.Exceptions.EntityUnauthorizedAccessException\u0027 was thrown.\r\n   at RebacExperiments.Server.Api.Services.UserTaskService.DeleteUserTaskAsync(ApplicationDbContext context, Int32 userTaskId, Int32 currentUserId, CancellationToken cancellationToken) in C:\\Users\\philipp\\source\\repos\\bytefish\\RebacExperiments\\RebacExperiments\\RebacExperiments.Server.Api\\Services\\UserTaskService.cs:line 148\r\n   at RebacExperiments.Server.Api.Controllers.UserTasksController.DeleteUserTask(ApplicationDbContext context, IUserTaskService userTaskService, Int32 userTaskId, CancellationToken cancellationToken) in C:\\Users\\philipp\\source\\repos\\bytefish\\RebacExperiments\\RebacExperiments\\RebacExperiments.Server.Api\\Controllers\\UserTasksController.cs:line 141"
-}
-```
-
-The user `max@mustermann.local` is allowed to create a `UserTask` though. We have seen, that the person 
-creating a `UserTask` is automatically the `owner` of the task and the entire organization of the user 
-can view it.
-
-```
-### Create a new UserTask "API HTTP File Example" as "max@mustermann.local"
-
-POST {{RebacExperiments.Server.Api_HostAddress}}/UserTasks
-Content-Type: application/json
-
-{
-    "title": "API HTTP File Example",
-    "description": "API HTTP File Example",
-    "dueDateTime": null,
-    "reminderDateTime": null,
-    "completedDateTime": null,
-    "assignedTo": null,
-    "userTaskPriority": 2,
-    "userTaskStatus": 2
-}
-```
-
-We get a successful response with the created task as the response payload:
-
-```
-Status: 200 OKTime: 264,41 msSize: 335 bytes
-
-{
-  "title": "API HTTP File Example",
-  "description": "API HTTP File Example",
-  "dueDateTime": null,
-  "reminderDateTime": null,
-  "completedDateTime": null,
-  "assignedTo": null,
-  "userTaskPriority": 2,
-  "userTaskStatus": 2,
-  "id": 38188,
-  "rowVersion": "AAAAAAAAB/k=",
-  "lastEditedBy": 7,
-  "validFrom": "2023-10-23T08:02:41.8051703",
-  "validTo": "9999-12-31T23:59:59.9999999"
-}
-```
-
-If we now sign-in "philipp@bytefish.de":
-
-```
-### Sign In "philipp@bytefish.de"
-
-POST {{RebacExperiments.Server.Api_HostAddress}}/Authentication/sign-in
-Content-Type: application/json
-
-{
-  "username": "philipp@bytefish.de",
-  "password": "5!F25GbKwU3P",
-  "rememberMe": true
-}
-```
-
-And query for the `UserTasks`:
-
-```
-### Get all UserTasks for "philipp@bytefish.de"
-
-GET {{RebacExperiments.Server.Api_HostAddress}}/UserTasks
-```
-
-We cannot see the "API HTTP File Example" Task created by the other user, because 
-`philipp@bytefish.de` isn't part of the Organization and has no relationship to the 
-task.
-
-And this is where our example ends. 
-
-Feel free to play around with the example as much as you like!
-
-
-
-## Further Reading ##
-
-* [Exploring Relationship-based Access Control (ReBAC) with Google Zanzibar](https://www.bytefish.de/blog/relationship_based_acl_with_google_zanzibar.html)

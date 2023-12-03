@@ -37,8 +37,8 @@ namespace AclExperiments
             var rewrite = GetUsersetRewrite(namespaceConfiguration, relation);
 
             // Check Rewrite Rules for the Relation:
-            return await
-                CheckUsersetRewriteAsync(rewrite, @namespace, @object, relation, subject, cancellationToken)
+            return await this
+                .CheckUsersetRewriteAsync(rewrite, @namespace, @object, relation, subject, cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -107,8 +107,8 @@ namespace AclExperiments
                     {
                         foreach (var child in setOperationExpression.Children)
                         {
-                            var permitted = await
-                                CheckUsersetRewriteAsync(child, @namespace, @object, relation, user, cancellationToken)
+                            var permitted = await this
+                                .CheckUsersetRewriteAsync(child, @namespace, @object, relation, user, cancellationToken)
                                 .ConfigureAwait(false);
 
                             if (!permitted)
@@ -123,8 +123,8 @@ namespace AclExperiments
                     {
                         foreach (var child in setOperationExpression.Children)
                         {
-                            var permitted = await
-                                CheckUsersetRewriteAsync(child, @namespace, @object, relation, user, cancellationToken)
+                            var permitted = await this
+                                .CheckUsersetRewriteAsync(child, @namespace, @object, relation, user, cancellationToken)
                                 .ConfigureAwait(false);
 
                             if (permitted)
@@ -165,8 +165,8 @@ namespace AclExperiments
 
             foreach (var subjectSet in subjestSets)
             {
-                var permitted = await
-                    CheckAsync(subjectSet.Namespace, subjectSet.Object, subjectSet.Relation, user, cancellationToken)
+                var permitted = await this
+                    .CheckAsync(subjectSet.Namespace, subjectSet.Object, subjectSet.Relation, user, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (permitted)
@@ -185,8 +185,8 @@ namespace AclExperiments
                 throw new InvalidOperationException("A Computed Userset requires a relation");
             }
 
-            return await
-                CheckAsync(@namespace, @object, computedUsersetExpression.Relation, user, cancellationToken)
+            return await this
+                .CheckAsync(@namespace, @object, computedUsersetExpression.Relation, user, cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -216,8 +216,8 @@ namespace AclExperiments
                     {
                         relation = tupleToUsersetExpression.ComputedUsersetExpression.Relation!;
 
-                        var permitted = await
-                            CheckAsync(subject.Namespace, subject.Object, relation, user, cancellationToken)
+                        var permitted = await this
+                            .CheckAsync(subject.Namespace, subject.Object, relation, user, cancellationToken)
                             .ConfigureAwait(false);
 
                         if (permitted)
@@ -238,17 +238,14 @@ namespace AclExperiments
 
         public async Task<SubjectTree> ExpandAsync(string @namespace, string @object, string relation, int depth, CancellationToken cancellationToken)
         {
-            // Get the latest Namespace Configuration from the Store:
             var namespaceConfiguration = await _namespaceConfigurationStore
                 .GetLatestNamespaceConfigurationAsync(@namespace, cancellationToken)
                 .ConfigureAwait(false);
 
-            // Get the Rewrite for the Relation from the Namespace Configuration:
-            var rewrite = GetUsersetRewrite(namespaceConfiguration, relation);
+            var usersetRewriteForRelation = GetUsersetRewrite(namespaceConfiguration, relation);
 
-            // Expand the Rewrite:
-            var t = await
-                 ExpandRewriteAsync(rewrite, @namespace, @object, relation, depth, cancellationToken)
+            var t = await this
+                 .ExpandRewriteAsync(usersetRewriteForRelation, @namespace, @object, relation, depth, cancellationToken)
                  .ConfigureAwait(false);
 
             return new SubjectTree
@@ -264,24 +261,25 @@ namespace AclExperiments
             switch (rewrite)
             {
                 case ThisUsersetExpression thisUsersetExpression:
-                    return await
-                        ExpandThisAsync(thisUsersetExpression, @namespace, @object, relation, depth, cancellationToken)
+                    return await this
+                        .ExpandThisAsync(thisUsersetExpression, @namespace, @object, relation, depth, cancellationToken)
                         .ConfigureAwait(false);
                 case ComputedUsersetExpression computedUsersetExpression:
-                    return await
-                        ExpandComputedUserSetAsync(computedUsersetExpression, @namespace, @object, relation, depth, cancellationToken)
+                    return await this
+                        .ExpandComputedUserSetAsync(computedUsersetExpression, @namespace, @object, relation, depth, cancellationToken)
                         .ConfigureAwait(false);
                 case TupleToUsersetExpression tupleToUsersetExpression:
-                    return await
-                        ExpandTupleToUsersetAsync(tupleToUsersetExpression, @namespace, @object, relation, depth, cancellationToken)
+                    return await this
+                        .ExpandTupleToUsersetAsync(tupleToUsersetExpression, @namespace, @object, relation, depth, cancellationToken)
                         .ConfigureAwait(false);
                 case ChildUsersetExpression childUsersetExpression:
                     return await this
                         .ExpandRewriteAsync(childUsersetExpression.Userset, @namespace, @object, relation, depth, cancellationToken)
                         .ConfigureAwait(false);
                 case SetOperationUsersetExpression setOperationExpression:
-                    return await
-                        ExpandSetOperationAsync(setOperationExpression, @namespace, @object, relation, depth, cancellationToken);
+                    return await this
+                        .ExpandSetOperationAsync(setOperationExpression, @namespace, @object, relation, depth, cancellationToken)
+                        .ConfigureAwait(false);
                 default:
                     throw new InvalidOperationException($"Unable to execute check for Expression '{rewrite.GetType().Name}'");
             }
@@ -294,8 +292,8 @@ namespace AclExperiments
             // TODO This could be done in Parallel
             foreach (var child in setOperationUsersetExpression.Children)
             {
-                var t = await
-                    ExpandRewriteAsync(child, @namespace, @object, relation, depth, cancellationToken)
+                var t = await this
+                    .ExpandRewriteAsync(child, @namespace, @object, relation, depth, cancellationToken)
                     .ConfigureAwait(false);
 
                 children.Add(t);
@@ -365,8 +363,8 @@ namespace AclExperiments
                         rr = relation;
                     }
 
-                    var t = await
-                        ExpandAsync(subjectSet.Namespace, subjectSet.Object, rr, depth - 1, cancellationToken)
+                    var t = await this
+                        .ExpandAsync(subjectSet.Namespace, subjectSet.Object, rr, depth - 1, cancellationToken)
                         .ConfigureAwait(false);
 
                     children.Add(t);
@@ -400,8 +398,8 @@ namespace AclExperiments
                 throw new InvalidOperationException("A Computed Userset requires a relation");
             }
 
-            var subTree = await
-                ExpandAsync(@namespace, @object, computedUsersetExpression.Relation, depth - 1, cancellationToken)
+            var subTree = await this
+                .ExpandAsync(@namespace, @object, computedUsersetExpression.Relation, depth - 1, cancellationToken)
                 .ConfigureAwait(false);
 
             return new SubjectTree
@@ -447,8 +445,8 @@ namespace AclExperiments
                         rr = relation;
                     }
 
-                    var t = await
-                        ExpandAsync(subjectSet.Namespace, subjectSet.Object, rr, depth - 1, cancellationToken)
+                    var t = await this
+                        .ExpandAsync(subjectSet.Namespace, subjectSet.Object, rr, depth - 1, cancellationToken)
                         .ConfigureAwait(false);
 
                     children.Add(new SubjectTree

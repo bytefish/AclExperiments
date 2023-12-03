@@ -1,6 +1,5 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using AclExperiments;
 using AclExperiments.Database.Connections;
 using AclExperiments.Models;
 using AclExperiments.Stores;
@@ -18,7 +17,7 @@ namespace AclExperiments.Tests
 
         private INamespaceConfigurationStore _namespaceConfigurationStore = null!;
         private IRelationTupleStore _relationTupleStore = null!;
-        
+
         protected override Task OnSetupBeforeCleanupAsync()
         {
             _aclService = _services.GetRequiredService<AclService>();
@@ -26,6 +25,25 @@ namespace AclExperiments.Tests
             _namespaceConfigurationStore = _services.GetRequiredService<INamespaceConfigurationStore>();
 
             return Task.CompletedTask;
+        }
+
+        public override void RegisterServices(IServiceCollection services)
+        {
+            services.AddSingleton<ISqlConnectionFactory>((sp) =>
+            {
+                var connectionString = _configuration.GetConnectionString("ApplicationDatabase");
+
+                if (connectionString == null)
+                {
+                    throw new InvalidOperationException($"No Connection String named 'ApplicationDatabase' found in appsettings.json");
+                }
+
+                return new SqlServerConnectionFactory(connectionString);
+            });
+
+            services.AddSingleton<AclService>();
+            services.AddSingleton<INamespaceConfigurationStore, SqlNamespaceConfigurationStore>();
+            services.AddSingleton<IRelationTupleStore, SqlRelationTupleStore>();
         }
 
         #region Check API
@@ -45,7 +63,7 @@ namespace AclExperiments.Tests
         /// folder    |   folder_1    |   viewer      |   user_2              |
         /// </summary>
         [TestMethod]
-        public async Task GetRelationTuplesAsync_QueryForNamespace()
+        public async Task CheckAsync_CheckUserPermissions()
         {
             // Arrange
             await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("doc", 1, File.ReadAllText("Resources/doc.nsconfig"), 1, default);
@@ -126,7 +144,7 @@ namespace AclExperiments.Tests
         /// folder    |   folder_1    |   viewer      |   user_2              |
         /// </summary>
         [TestMethod]
-        public async Task Expand_ExpandWithDirectRelationAndRewrite()
+        public async Task Expand_ExpandUsersetRewrites()
         {
             // Arrange
             await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("doc", 1, File.ReadAllText("Resources/doc.nsconfig"), 1, default);
@@ -193,24 +211,5 @@ namespace AclExperiments.Tests
         }
 
         #endregion Expand API
-
-        public override void RegisterServices(IServiceCollection services)
-        {
-            services.AddSingleton<ISqlConnectionFactory>((sp) =>
-            {
-                var connectionString = _configuration.GetConnectionString("ApplicationDatabase");
-
-                if (connectionString == null)
-                {
-                    throw new InvalidOperationException($"No Connection String named 'ApplicationDatabase' found in appsettings.json");
-                }
-
-                return new SqlServerConnectionFactory(connectionString);
-            });
-
-            services.AddSingleton<AclService>();
-            services.AddSingleton<INamespaceConfigurationStore, SqlNamespaceConfigurationStore>();
-            services.AddSingleton<IRelationTupleStore, SqlRelationTupleStore>();
-        }
     }
 }
