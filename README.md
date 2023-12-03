@@ -1,15 +1,15 @@
 # Experimenting with Relationship-based Access Control: Implementing the Google Zanzibar Check API and Expand API #
 
-*Google Zanzibar* is Google's central solution for providing authorization among its many services 
-and described at:
+Google Zanzibar is Google's central solution for providing authorization among its many services 
+and described in a paper at:
 
 * [https://research.google/pubs/pub48190/](https://research.google/pubs/pub48190/)
 
 This Git Repository implements a highly simplified version of the Google Zanzibar `Check API` 
-and `Expand API` to see how to work with Fine Grained Permission for Authorization and maybe 
-learn something along the way.
+and `Expand API`. It also includes an ANTLR4-based parser for the namespace configuration language 
+described in the original paper.
 
-## Example ##
+## Google Zanzibar "Check" and "Expand" Example ##
 
 The Google Zanzibar paper describes a namespace configuration for documents. We expand on this 
 example and add a namespace configuration for folders, and see how to use the Check API and Expand 
