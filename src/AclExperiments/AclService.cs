@@ -275,6 +275,10 @@ namespace AclExperiments
                     return await
                         ExpandTupleToUsersetAsync(tupleToUsersetExpression, @namespace, @object, relation, depth, cancellationToken)
                         .ConfigureAwait(false);
+                case ChildUsersetExpression childUsersetExpression:
+                    return await this
+                        .ExpandRewriteAsync(childUsersetExpression.Userset, @namespace, @object, relation, depth, cancellationToken)
+                        .ConfigureAwait(false);
                 case SetOperationUsersetExpression setOperationExpression:
                     return await
                         ExpandSetOperationAsync(setOperationExpression, @namespace, @object, relation, depth, cancellationToken);
@@ -444,7 +448,7 @@ namespace AclExperiments
                     }
 
                     var t = await
-                        ExpandAsync(subjectSet.Namespace, subjectSet.Object, subjectSet.Relation, depth - 1, cancellationToken)
+                        ExpandAsync(subjectSet.Namespace, subjectSet.Object, rr, depth - 1, cancellationToken)
                         .ConfigureAwait(false);
 
                     children.Add(new SubjectTree
