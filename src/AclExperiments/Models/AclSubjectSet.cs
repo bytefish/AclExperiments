@@ -57,7 +57,7 @@ namespace AclExperiments.Models
             {
                 Namespace = innerParts[0],
                 Object = innerParts[1],
-                Relation = innerParts[2]
+                Relation = parts[1]
             };
         }
     }

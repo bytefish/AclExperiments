@@ -65,7 +65,7 @@ namespace AclExperiments.Stores
 
                 await query.ExecuteNonQueryAsync(cancellationToken);
 
-                return query.GetOutParam<int>("Count");
+                return query.GetOutParam<int>("RowCount");
             }
         }
 
@@ -106,7 +106,6 @@ namespace AclExperiments.Stores
                     .Tvp("RelationTuples", "[Identity].[udt_RelationTupleType]", ToSqlDataRecords(sqlRelationTuples))
                     .ExecuteNonQueryAsync(cancellationToken)
                     .ConfigureAwait(false);
-
             }
         }
 

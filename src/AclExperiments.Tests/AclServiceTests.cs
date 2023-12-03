@@ -1,160 +1,128 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using AclExperiments;
+using AclExperiments.Database.Connections;
+using AclExperiments.Models;
+using AclExperiments.Stores;
 using AclExperiments.Tests.Infrastructure;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace RebacExperiments.Server.Api.Tests
+namespace AclExperiments.Tests
 {
+    [TestClass]
     public class AclServiceTests : IntegrationTestBase
     {
+        private AclService _aclService = null!;
+
+        private INamespaceConfigurationStore _namespaceConfigurationStore = null!;
+        private IRelationTupleStore _relationTupleStore = null!;
+        
+        protected override Task OnSetupBeforeCleanupAsync()
+        {
+            _aclService = _services.GetRequiredService<AclService>();
+            _relationTupleStore = _services.GetRequiredService<IRelationTupleStore>();
+            _namespaceConfigurationStore = _services.GetRequiredService<INamespaceConfigurationStore>();
+
+            return Task.CompletedTask;
+        }
 
 
         ///// <summary>
-        ///// In this test we create a <see cref="SqlUser"/> (user) and a <see cref="UserTask"/> (task). The 'user' is member of 
-        ///// a <see cref="Team"/> (team). The 'user' is also a member of an <see cref="Organization"/> (oganization). Members 
-        ///// of the 'organization' are viewers of the 'task' and members of the 'team' are owners of the 'task'.
-        ///// 
-        ///// The Relationship-Table is given below.
-        ///// 
-        ///// ObjectKey           |  ObjectNamespace  |   ObjectRelation  |   SubjectKey          |   SubjectNamespace    |   SubjectRelation
-        ///// --------------------|-------------------|-------------------|-----------------------|-----------------------|-------------------
-        ///// :team.id:           |   Team            |       member      |   :user.id:           |       User            |   NULL
-        ///// :organization.id:   |   Organization    |       member      |   :user.id:           |       User            |   NULL
-        ///// :task.id:           |   UserTask        |       viewer      |   :organization.id:   |       Organization    |   member
-        ///// :task.id:           |   UserTask        |       owner       |   :team.id:           |       Team            |   member
-        ///// </summary>
-        //[Test]
-        //public async Task CheckUserObject_OneUserTaskAssignedThroughOrganizationAndTeam()
-        //{
-        //    // Arrange
-        //    var user = new SqlUser
-        //    {
-        //        FullName = "Test-User",
-        //        PreferredName = "Test-User",
-        //        IsPermittedToLogon = false,
-        //        LastEditedBy = 1,
-        //        LogonName = "test-user@test-user.localhost"
-        //    };
+        /// In this test we have one document "doc_1", and two users "user_1" and "user_2". "user_1" 
+        /// has a "viewer" permission on "doc_1", because he has a direct relationto it. "user_2" has 
+        /// a viewer permission on a folder "folder_1". 
+        /// 
+        /// The folder "folder_1" is a "parent" of the document, and thus "user_2" inherits the folders 
+        /// permission through the computed userset.
+        /// 
+        /// Namespace |  Object       |   Relation    |   Subject             |
+        /// ----------|---------------|---------------|-----------------------|
+        /// doc       |   doc_1       |   viewer      |   user_1              |
+        /// doc       |   doc_1       |   parent      |   folder:folder_1#... |
+        /// folder    |   folder_1    |   viewer      |   user_2              |
+        /// </summary>
+        [TestMethod]
+        public async Task GetRelationTuplesAsync_QueryForNamespace()
+        {
+            // Arrange
+            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("doc", 1, File.ReadAllText("Resources/doc.nsconfig"), 1, default);
+            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("folder", 1, File.ReadAllText("Resources/folder.nsconfig"), 1, default);
 
-        //    await _applicationDbContext.AddAsync(user);
-        //    await _applicationDbContext.SaveChangesAsync();
+            var aclRelations = new[]
+            {
+                    new AclRelation
+                    {
+                        Object = new AclObject
+                        {
+                            Namespace = "doc",
+                            Id = "doc_1"
+                        },
+                        Relation = "owner",
+                        Subject = new AclSubjectId
+                        {
+                            Id = "user_1"
+                        }
+                    },
+                    new AclRelation
+                    {
+                        Object = new AclObject
+                        {
+                            Namespace = "doc",
+                            Id = "doc_1"
+                        },
+                        Relation = "parent",
+                        Subject = new AclSubjectId
+                        {
+                            Id = "folder:folder_1#..."
+                        }
+                    },
+                    new AclRelation
+                    {
+                        Object = new AclObject
+                        {
+                            Namespace = "folder",
+                            Id = "folder_1"
+                        },
+                        Relation = "viewer",
+                        Subject = new AclSubjectId
+                        {
+                            Id = "user_2"
+                        }
+                    },
+                };
 
-        //    var organization = new Organization
-        //    {
-        //        Name = "Test-Organization",
-        //        Description = "Organization for Unit Test",
-        //        LastEditedBy = user.Id
-        //    };
+            await _relationTupleStore.AddRelationTuplesAsync(aclRelations, 1, default);
 
-        //    await _applicationDbContext.AddAsync(organization);
-        //    await _applicationDbContext.SaveChangesAsync();
+            // Act
+            var user_1_is_permitted = await _aclService.CheckAsync("doc", "doc_1", "viewer", "user_1", default);
+            var user_2_is_permitted = await _aclService.CheckAsync("doc", "doc_1", "viewer", "user_2", default);
+            var user_3_is_permitted = await _aclService.CheckAsync("doc", "doc_1", "viewer", "user_3", default);
 
-        //    var team = new Team
-        //    {
-        //        Name = "Test-Team",
-        //        Description = "Team for Unit Test",
-        //        LastEditedBy = user.Id
-        //    };
+            // Assert
+            Assert.AreEqual(true, user_1_is_permitted);
+            Assert.AreEqual(true, user_2_is_permitted);
+            Assert.AreEqual(false, user_3_is_permitted);
+        }
 
-        //    await _applicationDbContext.AddAsync(team);
-        //    await _applicationDbContext.SaveChangesAsync();
-
-        //    var task = new UserTask
-        //    {
-        //        Title = "Test-Task",
-        //        Description = "My Test-Task",
-        //        LastEditedBy = user.Id,
-        //        UserTaskPriority = UserTaskPriorityEnum.High,
-        //        UserTaskStatus = UserTaskStatusEnum.InProgress
-        //    };
-
-        //    await _applicationDbContext.AddAsync(task);
-        //    await _applicationDbContext.SaveChangesAsync();
-
-        //    await _applicationDbContext.AddRelationshipAsync(team, Relations.Member, user, null, user.Id);
-        //    await _applicationDbContext.AddRelationshipAsync(organization, Relations.Member, user, null, user.Id);
-        //    await _applicationDbContext.AddRelationshipAsync(task, Relations.Viewer, organization, Relations.Member, user.Id);
-        //    await _applicationDbContext.AddRelationshipAsync(task, Relations.Owner, team, Relations.Member, user.Id);
-        //    await _applicationDbContext.SaveChangesAsync();
-
-        //    // Act
-        //    var isOwnerOfTask = await _applicationDbContext.CheckUserObject(user.Id, task, Relations.Owner, default);
-        //    var isViewerOfTask = await _applicationDbContext.CheckUserObject(user.Id, task, Relations.Viewer, default);
-
-        //    // Assert
-        //    Assert.AreEqual(true, isOwnerOfTask);
-        //    Assert.AreEqual(true, isViewerOfTask);
-        //}
-
-        ///// <summary>
-        ///// In this test we create a <see cref="SqlUser"/> (user) and assign two <see cref="UserTask"/> (tas1, task2). The 'user' 
-        ///// is 'viewer' for 'task1' and an 'owner' for 'task2'.
-        ///// 
-        ///// The Relationship-Table is given below.
-        ///// 
-        ///// ObjectKey           |  ObjectNamespace  |   ObjectRelation  |   SubjectKey          |   SubjectNamespace    |   SubjectRelation
-        ///// --------------------|-------------------|-------------------|-----------------------|-----------------------|-------------------
-        ///// :task1.id:          |   UserTask        |       viewer      |   :user.id:           |       User            |   NULL
-        ///// :task2.id:          |   UserTask        |       owner       |   :user.id:           |       User            |   NULL
-        ///// </summary>
-        //[Test]
-        //public async Task CheckUserObject_TwoUserTasksAssignedToUser()
-        //{
-        //    // Arrange
-        //    var user = new SqlUser
-        //    {
-        //        FullName = "Test-User",
-        //        PreferredName = "Test-User",
-        //        IsPermittedToLogon = false,
-        //        LastEditedBy = 1,
-        //        LogonName = "test-user@test-user.localhost"
-        //    };
-
-        //    await _applicationDbContext.AddAsync(user);
-        //    await _applicationDbContext.SaveChangesAsync();
-
-        //    var task1 = new UserTask
-        //    {
-        //        Title = "Task 1",
-        //        Description = "Task 1",
-        //        LastEditedBy = user.Id,
-        //        UserTaskPriority = UserTaskPriorityEnum.High,
-        //        UserTaskStatus = UserTaskStatusEnum.InProgress
-        //    };
-
-        //    var task2 = new UserTask
-        //    {
-        //        Title = "Task2",
-        //        Description = "Task2",
-        //        LastEditedBy = user.Id,
-        //        UserTaskPriority = UserTaskPriorityEnum.High,
-        //        UserTaskStatus = UserTaskStatusEnum.InProgress
-        //    };
-
-        //    await _applicationDbContext.AddRangeAsync(new[] { task1, task2 });
-        //    await _applicationDbContext.SaveChangesAsync();
-
-        //    await _applicationDbContext.AddRelationshipAsync(task1, Relations.Viewer, user, null, user.Id);
-        //    await _applicationDbContext.AddRelationshipAsync(task2, Relations.Owner, user, null, user.Id);
-        //    await _applicationDbContext.SaveChangesAsync();
-
-        //    // Act
-        //    var isOwnerOfTask1 = await _applicationDbContext.CheckUserObject(user.Id, task1, Relations.Owner, default);
-        //    var isViewerOfTask1 = await _applicationDbContext.CheckUserObject(user.Id, task1, Relations.Viewer, default);
-
-        //    var isOwnerOfTask2 = await _applicationDbContext.CheckUserObject(user.Id, task2, Relations.Owner, default);
-        //    var isViewerOfTask2 = await _applicationDbContext.CheckUserObject(user.Id, task2, Relations.Viewer, default);
-
-        //    // Assert
-        //    Assert.AreEqual(false, isOwnerOfTask1);
-        //    Assert.AreEqual(true, isViewerOfTask1);  
-
-        //    Assert.AreEqual(true, isOwnerOfTask2);
-        //    Assert.AreEqual(false, isViewerOfTask2);           
-        //}
         public override void RegisterServices(IServiceCollection services)
         {
-            throw new NotImplementedException();
+            services.AddSingleton<ISqlConnectionFactory>((sp) =>
+            {
+                var connectionString = _configuration.GetConnectionString("ApplicationDatabase");
+
+                if (connectionString == null)
+                {
+                    throw new InvalidOperationException($"No Connection String named 'ApplicationDatabase' found in appsettings.json");
+                }
+
+                return new SqlServerConnectionFactory(connectionString);
+            });
+
+            services.AddSingleton<AclService>();
+            services.AddSingleton<INamespaceConfigurationStore, SqlNamespaceConfigurationStore>();
+            services.AddSingleton<IRelationTupleStore, SqlRelationTupleStore>();
         }
     }
 }

@@ -92,6 +92,8 @@ namespace AclExperiments.Tests.Infrastructure
         {
             var services = new ServiceCollection();
 
+            services.AddLogging();
+
             RegisterServices(services);
 
             return services.BuildServiceProvider();

@@ -60,7 +60,7 @@ namespace AclExperiments
         }
 
         /// <summary>
-        /// Checks a Userset 
+        /// Checks a Userset Rewrite.
         /// </summary>
         /// <param name="rewrite">Rewrite Rule for the Relation</param>
         /// <param name="namespace">Object Namespace</param>
@@ -75,8 +75,12 @@ namespace AclExperiments
             switch (rewrite)
             {
                 case ThisUsersetExpression thisUsersetExpression:
-                    return await
-                        CheckThisAsync(thisUsersetExpression, @namespace, @object, relation, subject, cancellationToken)
+                    return await this
+                        .CheckThisAsync(thisUsersetExpression, @namespace, @object, relation, subject, cancellationToken)
+                        .ConfigureAwait(false);
+                case ChildUsersetExpression childUsersetExpression:
+                    return await this
+                        .CheckUsersetRewriteAsync(childUsersetExpression.Userset, @namespace, @object, relation, subject, cancellationToken)
                         .ConfigureAwait(false);
                 case ComputedUsersetExpression computedUsersetExpression:
                     return await
