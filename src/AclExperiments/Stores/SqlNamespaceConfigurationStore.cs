@@ -12,9 +12,6 @@ using AclExperiments.Database.Query;
 
 namespace AclExperiments.Stores
 {
-    /// <summary>
-    /// EntityFramework-core based implementation of a <see cref="INamespaceConfigurationStore"/>.
-    /// </summary>
     public class SqlNamespaceConfigurationStore : INamespaceConfigurationStore
     {
         private readonly ISqlConnectionFactory _sqlConnectionFactory;

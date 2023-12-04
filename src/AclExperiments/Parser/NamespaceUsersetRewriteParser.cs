@@ -1,4 +1,6 @@
-﻿using Antlr4.Runtime;
+﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 using AclExperiments.Expressions;
 using AclExperiments.Parser.Generated;
@@ -120,7 +122,7 @@ namespace AclExperiments.Parser
 
                 if (context.usersetRelationRef().Length > 1)
                 {
-                    throw new InvalidOperationException("More than one relation specified"); //TODO: figure out which exception to throw
+                    throw new InvalidOperationException("More than one relation specified");
                 }
 
                 if (context.usersetRelationRef().Length != 0)
@@ -176,7 +178,7 @@ namespace AclExperiments.Parser
 
                 if (context.namespaceRef().Length > 1)
                 {
-                    throw new InvalidOperationException("More than one namespace specified"); //TODO: figure out which exception to throw
+                    throw new InvalidOperationException("More than one namespace specified");
                 }
 
                 if (context.namespaceRef().Length != 0)

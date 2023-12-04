@@ -12,9 +12,6 @@ using System.Data.Common;
 
 namespace AclExperiments.Stores
 {
-    /// <summary>
-    /// EntityFramework Core-based implementation of a <see cref="IRelationTupleStore"/>.
-    /// </summary>
     public class SqlRelationTupleStore : IRelationTupleStore
     {
         private readonly ISqlConnectionFactory _sqlConnectionFactory;

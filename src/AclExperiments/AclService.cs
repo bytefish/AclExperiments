@@ -199,16 +199,16 @@ namespace AclExperiments
                     Id = @object
                 };
 
-                var subjects = await _relationTupleStore
+                var subjectSets = await _relationTupleStore
                     .GetSubjectSetsAsync(aclObject, tupleToUsersetExpression.TuplesetExpression.Relation, cancellationToken)
                     .ConfigureAwait(false);
 
-                if (subjects.Count == 0)
+                if (subjectSets.Count == 0)
                 {
                     return false;
                 }
 
-                foreach (var subject in subjects)
+                foreach (var subject in subjectSets)
                 {
                     relation = subject.Relation;
 
@@ -309,7 +309,6 @@ namespace AclExperiments
                 }
                 else
                 {
-                    // Build a Union over the Children Results:
                     switch (setOperationUsersetExpression.Operation)
                     {
                         case SetOperationEnum.Union:
@@ -317,6 +316,11 @@ namespace AclExperiments
                             break;
                         case SetOperationEnum.Intersect:
                             subjects.IntersectWith(child.Result);
+                            if (subjects.Count == 0)
+                                goto eval;
+                            break;
+                        case SetOperationEnum.Exclude:
+                            subjects.ExceptWith(child.Result);
                             if (subjects.Count == 0)
                                 goto eval;
                             break;

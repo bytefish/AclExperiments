@@ -15,6 +15,11 @@ namespace AclExperiments.Expressions
         /// <summary>
         /// Intersects the set of subjects found for the relations/permissions referenced.
         /// </summary>
-        Intersect = 2
+        Intersect = 2,
+
+        /// <summary>
+        /// Excludes the set of subjects found for the relations/permissions referenced.
+        /// </summary>
+        Exclude = 3,
     }
 }
