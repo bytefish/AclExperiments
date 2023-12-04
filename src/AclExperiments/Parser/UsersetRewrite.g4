@@ -1,3 +1,8 @@
+/** 
+  * This Grammar was written by Kjell Holmgren (https://github.com/kholmgren):
+  * 
+  *     - https://github.com/kholmgren/acl-rewrite/blob/master/src/main/antlr4/io/kettil/rewrite/parser/UsersetRewrite.g4
+  */
 grammar UsersetRewrite;
 
 options { caseInsensitive=true; }
