@@ -28,24 +28,24 @@ namespace AclExperiments.Stores
                 var query = new SqlQuery(connection).Proc("[Identity].[usp_NamespaceConfiguration_GetLatestByName]")
                     .Param("Name", name);
 
-                var tuples = new List<SqlNamespaceConfiguration>();
+                var namespaceConfigurations = new List<SqlNamespaceConfiguration>();
 
                 using (var reader = await query.ExecuteDataReaderAsync(cancellationToken).ConfigureAwait(false))
                 {
                     while (await reader.ReadAsync().ConfigureAwait(false))
                     {
-                        var tuple = MapToObject(reader);
+                        var namespaceConfiguration = MapToObject(reader);
 
-                        tuples.Add(tuple);
+                        namespaceConfigurations.Add(namespaceConfiguration);
                     }
                 }
 
-                if(tuples.Count == 0)
+                if(namespaceConfigurations.Count == 0)
                 {
                     throw new InvalidOperationException($"No Namespace Configuration with Name '{name}' found");
                 }
 
-                return NamespaceUsersetRewriteParser.Parse(tuples[0].Content);
+                return NamespaceUsersetRewriteParser.Parse(namespaceConfigurations[0].Content);
             }
         }
 
@@ -57,24 +57,24 @@ namespace AclExperiments.Stores
                     .Param("Name", name)
                     .Param("Version", version);
 
-                var tuples = new List<SqlNamespaceConfiguration>();
+                var namespaceConfigurations = new List<SqlNamespaceConfiguration>();
 
                 using (var reader = await query.ExecuteDataReaderAsync(cancellationToken).ConfigureAwait(false))
                 {
                     while (await reader.ReadAsync().ConfigureAwait(false))
                     {
-                        var tuple = MapToObject(reader);
+                        var namespaceConfiguration = MapToObject(reader);
 
-                        tuples.Add(tuple);
+                        namespaceConfigurations.Add(namespaceConfiguration);
                     }
                 }
 
-                if (tuples.Count == 0)
+                if (namespaceConfigurations.Count == 0)
                 {
                     throw new InvalidOperationException($"No Namespace Configuration with Name '{name}' found");
                 }
 
-                return NamespaceUsersetRewriteParser.Parse(tuples[0].Content);
+                return NamespaceUsersetRewriteParser.Parse(namespaceConfigurations[0].Content);
             }
         }
 
