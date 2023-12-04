@@ -9,6 +9,10 @@ This Git Repository implements a highly simplified version of the Google Zanziba
 and `Expand API`. It also includes an ANTLR4-based parser for the namespace configuration language 
 described in the original paper.
 
+The article for this repository can be found at:
+
+* [https://www.bytefish.de/blog/acl_google_zanzibar.html](https://www.bytefish.de/blog/acl_google_zanzibar.html)
+
 ## Google Zanzibar "Check" and "Expand" Example ##
 
 The Google Zanzibar paper describes a namespace configuration for documents. We expand on this 

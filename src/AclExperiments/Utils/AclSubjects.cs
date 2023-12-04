@@ -24,6 +24,12 @@ namespace AclExperiments.Utils
             return AclSubjectId.FromString(s);
         }
 
+        /// <summary>
+        /// Converts a given <see cref="AclSubject"/> to the textual Google Zanzibar representation.
+        /// </summary>
+        /// <param name="s">Subject, which is either a SubjectId or SubjectSet</param>
+        /// <returns>Google Zanzibar Notation for the ACL Relation</returns>
+        /// <exception cref="InvalidOperationException">Thrown, if the <see cref="AclSubject"/> couldn't be formatted as a string</exception>
         public static string SubjectToString(AclSubject s)
         {
             switch (s)
