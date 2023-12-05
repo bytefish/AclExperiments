@@ -36,6 +36,7 @@ namespace AclExperiments.Tests.Stores
                     Relation = "owner",
                     Subject = new AclSubjectId
                     {
+                        Namespace = "user",
                         Id = "user_1"
                     }
                 },
@@ -49,6 +50,7 @@ namespace AclExperiments.Tests.Stores
                     Relation = "owner",
                     Subject = new AclSubjectId
                     {
+                        Namespace = "user",
                         Id = "user_2"
                     }
                 },
@@ -62,6 +64,7 @@ namespace AclExperiments.Tests.Stores
                     Relation = "viewer",
                     Subject = new AclSubjectId
                     {
+                        Namespace = "user",
                         Id = "user_2"
                     }
                 },
@@ -97,6 +100,7 @@ namespace AclExperiments.Tests.Stores
                     Relation = "owner",
                     Subject = new AclSubjectId
                     {
+                        Namespace = "user",
                         Id = "user_1"
                     }
                 },
@@ -110,6 +114,7 @@ namespace AclExperiments.Tests.Stores
                     Relation = "owner",
                     Subject = new AclSubjectId
                     {
+                        Namespace = "user",
                         Id = "user_2"
                     }
                 },
@@ -123,6 +128,7 @@ namespace AclExperiments.Tests.Stores
                     Relation = "viewer",
                     Subject = new AclSubjectId
                     {
+                        Namespace = "user",
                         Id = "user_2"
                     }
                 },
@@ -158,6 +164,7 @@ namespace AclExperiments.Tests.Stores
                     Relation = "owner",
                     Subject = new AclSubjectId
                     {
+                        Namespace = "user",
                         Id = "user_1"
                     }
                 },
@@ -171,6 +178,7 @@ namespace AclExperiments.Tests.Stores
                     Relation = "owner",
                     Subject = new AclSubjectId
                     {
+                        Namespace = "user",
                         Id = "user_2"
                     }
                 },
@@ -184,6 +192,7 @@ namespace AclExperiments.Tests.Stores
                     Relation = "viewer",
                     Subject = new AclSubjectId
                     {
+                        Namespace = "user",
                         Id = "user_2"
                     }
                 },

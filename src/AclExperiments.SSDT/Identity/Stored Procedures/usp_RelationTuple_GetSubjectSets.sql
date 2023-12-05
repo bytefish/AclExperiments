@@ -20,10 +20,11 @@ AS BEGIN
     FROM 
         [Identity].[RelationTuple] r
     WHERE 
-        r.[Namespace] = @Namespace AND r.[Object] = @Object 
-            AND r.[Relation] = @Relation 
-            AND r.[SubjectNamespace] IS NOT NULL 
-            AND r.[Subject] IS NOT NULL 
-            AND r.[SubjectRelation] IS NOT NULL;
+        r.[Namespace] = @Namespace 
+        AND r.[Object] = @Object 
+        AND r.[Relation] = @Relation 
+        AND r.[SubjectNamespace] IS NOT NULL 
+        AND r.[Subject] IS NOT NULL 
+        AND r.[SubjectRelation] IS NOT NULL;
 
 END

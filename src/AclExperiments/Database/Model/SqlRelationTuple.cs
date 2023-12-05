@@ -22,6 +22,16 @@ namespace AclExperiments.Database.Model
         /// <summary>
         /// Gets or sets Subject Namespace.
         /// </summary>
+        public required string SubjectNamespace { get; set; }
+
+        /// <summary>
+        /// Gets or sets Subject.
+        /// </summary>
         public required string Subject { get; set; }
+
+        /// <summary>
+        /// Gets or sets Subject Relation.
+        /// </summary>
+        public required string? SubjectRelation { get; set; }
     }
 }

@@ -13,7 +13,7 @@ namespace AclExperiments.Stores
         /// <param name="relation">Relation between Object and SubjectSets</param>
         /// <param name="cancellationToken">CancellationToken to cancel asynchronous processing</param>
         /// <returns>An awaitable Task for SubjectSets</returns>
-        Task<List<AclSubjectSet>> GetSubjectSetsAsync(AclObject aclObject, string relation, CancellationToken cancellationToken);
+        Task<List<AclSubjectSet>> GetSubjectSetsForObjectAsync(AclObject aclObject, string relation, CancellationToken cancellationToken);
 
         /// <summary>
         /// For a direct check, we only need to know, if there is a matching row in the store.
