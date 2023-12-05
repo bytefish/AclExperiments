@@ -18,6 +18,18 @@ namespace AclExperiments.Database.Extensions
             }
         }
 
+        public static void SetNullableString(this SqlDataRecord sqlDataRecord, int ordinal, string? value)
+        {
+            if (value != null)
+            {
+                sqlDataRecord.SetString(ordinal, value);
+            }
+            else
+            {
+                sqlDataRecord.SetDBNull(ordinal);
+            }
+        }
+
         public static void SetNullableInt32(this SqlDataRecord sqlDataRecord, int ordinal, int? value)
         {
             if (value.HasValue)

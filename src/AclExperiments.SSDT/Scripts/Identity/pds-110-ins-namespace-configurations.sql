@@ -76,7 +76,7 @@ USING (VALUES
     ,[ValidTo]         
 )
 ON (
-    [Target].[NamespaceConfigurationID] = [Source].[NamespaceConfigurationID]
+    [Target].[Name] = [Source].[Name] AND [Target].[Version] = [Source].[Version]
 )
 WHEN NOT MATCHED BY TARGET THEN
     INSERT 

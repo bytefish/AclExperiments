@@ -22,11 +22,11 @@ USING (VALUES
     --- folder              |   folder_152      |       viewer      |   user_2                  |
     ---
       -- doc:doc_232#viewer@user_1
-      (1, 'doc',            'doc_323',      'viewer', 'user_1', 1, @ValidFrom, @ValidTo) 
+      (1, 'doc',            'doc_323',      'viewer', 'user', 'user_1', NULL, 1, @ValidFrom, @ValidTo) 
       -- doc:doc_152#parent@folder:folder_152#...
-     ,(2, 'doc',            'doc_152',      'parent', 'folder:folder_152#...', 1, @ValidFrom, @ValidTo)
+     ,(2, 'doc',            'doc_152',      'parent', 'folder', 'folder_152', '...', 1, @ValidFrom, @ValidTo)
      -- folder:folder_152#viewer@user_2
-     ,(3, 'folder',         'folder_152',   'viewer', 'user_2', 1, @ValidFrom, @ValidTo)
+     ,(3, 'folder',         'folder_152',   'viewer', 'user', 'user_2', NULL, 1, @ValidFrom, @ValidTo)
      
      -- User "max@mustermann.local"
 ) AS [Source]
@@ -35,13 +35,20 @@ USING (VALUES
     ,[Namespace] 
     ,[Object]       
     ,[Relation]  
+    ,[SubjectNamespace]
     ,[Subject]
+    ,[SubjectRelation]
     ,[LastEditedBy]    
     ,[ValidFrom]       
     ,[ValidTo]         
 )
 ON (
-    [Target].[RelationTupleID] = [Source].[RelationTupleID]
+    [Target].[Namespace] = [Source].[Namespace]
+        AND [Target].[Object] = [Source].[Object]
+        AND [Target].[Relation] = [Source].[Relation]
+        AND [Target].[SubjectNamespace] = [Source].[SubjectNamespace]
+        AND [Target].[Subject] = [Source].[Subject]
+        AND [Target].[SubjectRelation] = [Source].[SubjectRelation]
 )
 WHEN NOT MATCHED BY TARGET THEN
     INSERT 
@@ -50,7 +57,9 @@ WHEN NOT MATCHED BY TARGET THEN
             ,[Namespace]
             ,[Object]
             ,[Relation]
+            ,[SubjectNamespace]
             ,[Subject]
+            ,[SubjectRelation]
             ,[LastEditedBy]
             ,[ValidFrom]
             ,[ValidTo]
@@ -61,7 +70,9 @@ WHEN NOT MATCHED BY TARGET THEN
             ,[Source].[Namespace]
             ,[Source].[Object]
             ,[Source].[Relation]
-            ,[Source].[Subject]
+            ,[SubjectNamespace]
+            ,[Subject]
+            ,[SubjectRelation]
             ,[Source].[LastEditedBy]
             ,[Source].[ValidFrom]
             ,[Source].[ValidTo]

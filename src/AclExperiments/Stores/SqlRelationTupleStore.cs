@@ -75,6 +75,7 @@ namespace AclExperiments.Stores
                     .Param("Relation", relation)
                     .Param("SubjectNamespace", subjectId.Namespace)
                     .Param("Subject", subjectId.Id)
+                    .Param("SubjectRelation", null)
                     .OutParam("RowCount", SqlDbType.Int);
 
                 await query.ExecuteNonQueryAsync(cancellationToken);
@@ -124,7 +125,12 @@ namespace AclExperiments.Stores
                     }
                 }
 
-                return tuples.Select(x => AclSubjectSet.FromString(x.Subject)).ToList();
+                return tuples.Select(x => new AclSubjectSet
+                {
+                    Namespace = x.SubjectNamespace,
+                    Object = x.Subject,
+                    Relation = x.SubjectRelation ?? "..." // TODO This looks... problematic?
+                }).ToList();
             }
         }
 
@@ -250,7 +256,7 @@ namespace AclExperiments.Stores
                 Relation = source.GetString("Relation"),
                 SubjectNamespace = source.GetString("SubjectNamespace"),
                 Subject = source.GetString("Subject"),
-                SubjectRelation = source.GetString("SubjectRelation"),
+                SubjectRelation = source.GetNullableString("SubjectRelation"),
                 LastEditedBy = source.GetInt32("LastEditedBy"),
                 RowVersion = source.GetByteArray("RowVersion"),
                 ValidFrom = source.GetNullableDateTime("ValidFrom"),
@@ -265,7 +271,9 @@ namespace AclExperiments.Stores
                 new SqlMetaData("Namespace", SqlDbType.NVarChar, 50),
                 new SqlMetaData("Object", SqlDbType.NVarChar, 50),
                 new SqlMetaData("Relation", SqlDbType.NVarChar, 50),
+                new SqlMetaData("SubjectNamespace", SqlDbType.NVarChar, 50),
                 new SqlMetaData("Subject", SqlDbType.NVarChar, 50),
+                new SqlMetaData("SubjectRelation", SqlDbType.NVarChar, 50),
                 new SqlMetaData("RowVersion", SqlDbType.VarBinary, 8),
                 new SqlMetaData("LastEditedBy", SqlDbType.Int),
                 new SqlMetaData("ValidFrom", SqlDbType.DateTime2),
@@ -277,11 +285,13 @@ namespace AclExperiments.Stores
                 sdr.SetString(1, tuple.Namespace);
                 sdr.SetString(2, tuple.Object);
                 sdr.SetString(3, tuple.Relation);
-                sdr.SetString(4, tuple.Subject);
-                sdr.SetNullableBytes(5, tuple.RowVersion);
-                sdr.SetInt32(6, tuple.LastEditedBy);
-                sdr.SetNullableDateTime(7, tuple.ValidFrom);
-                sdr.SetNullableDateTime(8, tuple.ValidTo);
+                sdr.SetString(4, tuple.SubjectNamespace);
+                sdr.SetString(5, tuple.Subject);
+                sdr.SetNullableString(6, tuple.SubjectRelation);
+                sdr.SetNullableBytes(7, tuple.RowVersion);
+                sdr.SetInt32(8, tuple.LastEditedBy);
+                sdr.SetNullableDateTime(9, tuple.ValidFrom);
+                sdr.SetNullableDateTime(10, tuple.ValidTo);
 
                 yield return sdr;
             }

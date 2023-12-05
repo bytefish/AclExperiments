@@ -20,6 +20,6 @@ AS BEGIN
             AND [Relation] = @Relation 
             AND [SubjectNamespace] = @SubjectNamespace
             AND [Subject] = @Subject
-            AND [SubjectRelation] = @SubjectRelation);
+            AND (@SubjectRelation IS NULL OR [SubjectRelation] = @SubjectRelation));
 
 END

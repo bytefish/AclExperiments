@@ -2,7 +2,6 @@
     @Namespace          NVARCHAR(50)
    ,@Object             NVARCHAR(50)
    ,@Relation           NVARCHAR(50)
-   ,@SubjectNamespace   NVARCHAR(50)
 AS BEGIN
     
     SET NOCOUNT ON;
@@ -12,7 +11,9 @@ AS BEGIN
        ,r.[Namespace]        
        ,r.[Object]           
        ,r.[Relation]         
+       ,r.[SubjectNamespace]          
        ,r.[Subject]          
+       ,r.[SubjectRelation]          
        ,r.[RowVersion]       
        ,r.[LastEditedBy]     
        ,r.[ValidFrom]        
