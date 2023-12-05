@@ -9,6 +9,8 @@ AS BEGIN
         INNER JOIN  @RelationTuples d ON r.[Namespace] = d.[Namespace] 
             AND r.[Object] = d.[Object] 
             AND r.[Relation] = d.[Relation]
-            AND r.[Subject] = d.[Subject];
+            AND r.[SubjectNamespace] = d.[SubjectNamespace]
+            AND r.[Subject] = d.[Subject]
+            AND r.[SubjectRelation] = d.[SubjectRelation];
 
 END

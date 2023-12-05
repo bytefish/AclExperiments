@@ -9,14 +9,18 @@ AS BEGIN
         [Namespace]        
        ,[Object]           
        ,[Relation]         
+       ,[SubjectNamespace]          
        ,[Subject]          
+       ,[SubjectRelation]
        ,[LastEditedBy]     
     )
     SELECT 
-        [Namespace]      
-       ,[Object]         
-       ,[Relation]       
-       ,[Subject]        
+        [Namespace]
+       ,[Object]
+       ,[Relation]
+       ,[SubjectNamespace]
+       ,[Subject]
+       ,[SubjectRelation]
        ,[LastEditedBy]   
     FROM 
         @RelationTuples;
