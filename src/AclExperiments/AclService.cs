@@ -160,7 +160,7 @@ namespace AclExperiments
             }
 
             var subjestSets = await _relationTupleStore
-                .GetSubjectSetsAsync(aclObject, relation, cancellationToken)
+                .GetSubjectSetsForObjectAsync(aclObject, relation, cancellationToken)
                 .ConfigureAwait(false);
 
             foreach (var subjectSet in subjestSets)
@@ -200,7 +200,7 @@ namespace AclExperiments
                 };
 
                 var subjectSets = await _relationTupleStore
-                    .GetSubjectSetsAsync(aclObject, tupleToUsersetExpression.TuplesetExpression.Relation, cancellationToken)
+                    .GetSubjectSetsForObjectAsync(aclObject, tupleToUsersetExpression.TuplesetExpression.Relation, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (subjectSets.Count == 0)

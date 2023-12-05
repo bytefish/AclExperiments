@@ -1,7 +1,7 @@
 ﻿CREATE PROCEDURE [Identity].[usp_RelationTuple_GetSubjectSets]
-    @Namespace  NVARCHAR(50)
-   ,@Object     NVARCHAR(50)
-   ,@Relation   NVARCHAR(50) 
+    @Namespace          NVARCHAR(50)
+   ,@Object             NVARCHAR(50)
+   ,@Relation           NVARCHAR(50)
 AS BEGIN
     
     SET NOCOUNT ON;
@@ -11,7 +11,9 @@ AS BEGIN
        ,r.[Namespace]        
        ,r.[Object]           
        ,r.[Relation]         
+       ,r.[SubjectNamespace]          
        ,r.[Subject]          
+       ,r.[SubjectRelation]          
        ,r.[RowVersion]       
        ,r.[LastEditedBy]     
        ,r.[ValidFrom]        
@@ -19,6 +21,11 @@ AS BEGIN
     FROM 
         [Identity].[RelationTuple] r
     WHERE 
-        r.[Namespace] = @Namespace AND r.[Object] = @Object AND r.[Relation] = @Relation AND r.[Subject] LIKE '_%%:_%%#_%%';
+        r.[Namespace] = @Namespace 
+        AND r.[Object] = @Object 
+        AND r.[Relation] = @Relation 
+        AND r.[SubjectNamespace] IS NOT NULL 
+        AND r.[Subject] IS NOT NULL 
+        AND r.[SubjectRelation] IS NOT NULL;
 
 END

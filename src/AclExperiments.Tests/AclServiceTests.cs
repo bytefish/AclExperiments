@@ -81,6 +81,7 @@ namespace AclExperiments.Tests
                         Relation = "owner",
                         Subject = new AclSubjectId
                         {
+                            Namespace = "user",
                             Id = "user_1"
                         }
                     },
@@ -92,9 +93,12 @@ namespace AclExperiments.Tests
                             Id = "doc_1"
                         },
                         Relation = "parent",
-                        Subject = new AclSubjectId
+                        Subject = new AclSubjectSet
                         {
-                            Id = "folder:folder_1#..."
+
+                            Namespace = "folder",
+                            Object = "folder_1",
+                            Relation = "..."
                         }
                     },
                     new AclRelation
@@ -107,6 +111,7 @@ namespace AclExperiments.Tests
                         Relation = "viewer",
                         Subject = new AclSubjectId
                         {
+                            Namespace = "user",
                             Id = "user_2"
                         }
                     },
@@ -115,9 +120,9 @@ namespace AclExperiments.Tests
             await _relationTupleStore.AddRelationTuplesAsync(aclRelations, 1, default);
 
             // Act
-            var user_1_is_permitted = await _aclService.CheckAsync("doc", "doc_1", "viewer", "user_1", default);
-            var user_2_is_permitted = await _aclService.CheckAsync("doc", "doc_1", "viewer", "user_2", default);
-            var user_3_is_permitted = await _aclService.CheckAsync("doc", "doc_1", "viewer", "user_3", default);
+            var user_1_is_permitted = await _aclService.CheckAsync("doc", "doc_1", "viewer", "user:user_1", default);
+            var user_2_is_permitted = await _aclService.CheckAsync("doc", "doc_1", "viewer", "user:user_2", default);            
+            var user_3_is_permitted = await _aclService.CheckAsync("doc", "doc_1", "viewer", "user:user_3", default);            
 
             // Assert
             Assert.AreEqual(true, user_1_is_permitted);
@@ -162,6 +167,7 @@ namespace AclExperiments.Tests
                         Relation = "owner",
                         Subject = new AclSubjectId
                         {
+                            Namespace = "user",
                             Id = "user_1"
                         }
                     },
@@ -173,9 +179,12 @@ namespace AclExperiments.Tests
                             Id = "doc_1"
                         },
                         Relation = "parent",
-                        Subject = new AclSubjectId
+                        Subject = new AclSubjectSet
                         {
-                            Id = "folder:folder_1#..."
+
+                            Namespace = "folder",
+                            Object = "folder_1",
+                            Relation = "..."
                         }
                     },
                     new AclRelation
@@ -188,6 +197,7 @@ namespace AclExperiments.Tests
                         Relation = "viewer",
                         Subject = new AclSubjectId
                         {
+                            Namespace = "user",
                             Id = "user_2"
                         }
                     },

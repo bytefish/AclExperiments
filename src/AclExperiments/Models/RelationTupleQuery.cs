@@ -25,6 +25,16 @@ namespace AclExperiments.Models
         /// <summary>
         /// Gets or sets the Subject.
         /// </summary>
+        public string? SubjectNamespace { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Subject.
+        /// </summary>
         public string? Subject { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Subject.
+        /// </summary>
+        public string? SubjectRelation { get; set; }
     }
 }
