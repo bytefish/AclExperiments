@@ -10,11 +10,31 @@ options { caseInsensitive=true; }
 @header {#pragma warning disable 3021}
 
 namespace
-    : 'name' ':' namespaceName=STRING relation* EOF
+    : 'name' ':' namespaceName=STRING metadata relation* EOF
     ;
 
 relation
     : 'relation' '{' 'name' ':' relationName=STRING usersetRewrite? '}'
+    ;
+
+metadata
+    : 'metadata' '{' metadataRelation* '}'
+    ;
+
+metadataRelation
+    : 'relation' '{' 'name' ':' relationName=STRING directlyRelatedType* '}'
+    ;
+
+directlyRelatedType
+    : 'directly_related_type' '{' (directlyRelatedTypeNamespaceRef | directlyRelatedTypeRelationRef)+ '}'
+    ;
+
+directlyRelatedTypeNamespaceRef
+    : 'namespace' ':' ref=STRING
+    ;
+
+directlyRelatedTypeRelationRef
+    : 'relation' ':' ref=STRING
     ;
 
 usersetRewrite

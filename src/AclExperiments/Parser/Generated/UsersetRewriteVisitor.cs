@@ -46,6 +46,36 @@ public interface IUsersetRewriteVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitRelation([NotNull] UsersetRewriteParser.RelationContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="UsersetRewriteParser.metadata"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitMetadata([NotNull] UsersetRewriteParser.MetadataContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="UsersetRewriteParser.metadataRelation"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitMetadataRelation([NotNull] UsersetRewriteParser.MetadataRelationContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="UsersetRewriteParser.directlyRelatedType"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitDirectlyRelatedType([NotNull] UsersetRewriteParser.DirectlyRelatedTypeContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="UsersetRewriteParser.directlyRelatedTypeNamespaceRef"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitDirectlyRelatedTypeNamespaceRef([NotNull] UsersetRewriteParser.DirectlyRelatedTypeNamespaceRefContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="UsersetRewriteParser.directlyRelatedTypeRelationRef"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitDirectlyRelatedTypeRelationRef([NotNull] UsersetRewriteParser.DirectlyRelatedTypeRelationRefContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="UsersetRewriteParser.usersetRewrite"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

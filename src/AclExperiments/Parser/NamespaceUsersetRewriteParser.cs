@@ -34,7 +34,49 @@ namespace AclExperiments.Parser
                     Relations = context.relation()
                         .Select(VisitRelation)
                         .Cast<RelationUsersetExpression>()
-                        .ToDictionary(x => x.Name, x => x)
+                        .ToDictionary(x => x.Name, x => x),
+                    Metadata = (MetadataExpression) VisitMetadata(context.metadata())
+                };
+            }
+
+            public override UsersetExpression VisitMetadata([NotNull] MetadataContext context)
+            {
+                return new MetadataExpression
+                {
+                    Relations = context.metadataRelation()
+                        .Select(VisitMetadataRelation)
+                        .Cast<MetadataRelationExpression>()
+                        .ToList()
+                };
+            }
+
+            public override UsersetExpression VisitMetadataRelation([NotNull] MetadataRelationContext context)
+            {
+                return new MetadataRelationExpression
+                {
+                    Name = context.relationName.Text,
+                    DirectlyRelatedUserTypes = context.directlyRelatedType()
+                        .Select(VisitDirectlyRelatedType)
+                        .Cast<DirectlyRelatedUserType>()
+                        .ToList()
+                };                
+            }
+
+            public override UsersetExpression VisitDirectlyRelatedType([NotNull] DirectlyRelatedTypeContext context)
+            {
+                
+                if (context.directlyRelatedTypeNamespaceRef().Length == 0)
+                {
+                    throw new InvalidOperationException("A DirectlyRelatedType requires a Namespace");
+                }
+
+                string @namespace = context.directlyRelatedTypeNamespaceRef()[0].STRING().GetText();
+                string? relation = context.directlyRelatedTypeRelationRef().FirstOrDefault()?.STRING().GetText();
+
+                return new DirectlyRelatedUserType
+                {
+                    Namespace = Unquote(@namespace),
+                    Relation = relation != null ? Unquote(relation) : null,
                 };
             }
 

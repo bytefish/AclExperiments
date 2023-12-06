@@ -15,6 +15,11 @@ namespace AclExperiments.Expressions
         public required string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the Metadata for the Namespace.
+        /// </summary>
+        public required MetadataExpression Metadata { get; set; }
+
+        /// <summary>
         /// Gets or sets the Relations expressed by the Namespace configuration.
         /// </summary>
         public Dictionary<string, RelationUsersetExpression> Relations { get; set; } = new();

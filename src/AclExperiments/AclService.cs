@@ -512,9 +512,6 @@ namespace AclExperiments
                 .ConfigureAwait(false);
 
             var namespaceConfigurationsLookup = namespaceConfigurations.ToDictionary(x => x.Name, x => x);
-
-
-
         }
 
         private RelationshipEdge[] GetRelationshipEdges(Dictionary<string, NamespaceUsersetExpression> namespaceConfigurations, RelationReference target, RelationReference source, ConcurrentDictionary<string, byte> visited)
@@ -526,7 +523,7 @@ namespace AclExperiments
                 return [];
             }
 
-            var relation = GetRelationUsersetExpression(namespaceConfigurations, target);
+            var relation = GetRelation(namespaceConfigurations, target);
 
             return GetRelationshipEdgesWithTargetRewrite(
                 namespaceConfigurations, 
@@ -534,7 +531,6 @@ namespace AclExperiments
                 source,
                 relation.Rewrite,
                 visited);
-
         }
 
         private RelationshipEdge[] GetRelationshipEdgesWithTargetRewrite(Dictionary<string, NamespaceUsersetExpression> namespaceConfigurations, RelationReference target, RelationReference source, UsersetExpression rewrite, ConcurrentDictionary<string, byte> visited)
@@ -552,7 +548,7 @@ namespace AclExperiments
             }
         }
 
-        private RelationUsersetExpression GetRelationUsersetExpression(Dictionary<string, NamespaceUsersetExpression> namespaceConfigurations, RelationReference target)
+        private RelationUsersetExpression GetRelation(Dictionary<string, NamespaceUsersetExpression> namespaceConfigurations, RelationReference target)
         {
             if(!namespaceConfigurations.TryGetValue(target.Namespace, out var namespaceUserset)) 
             {
@@ -565,6 +561,13 @@ namespace AclExperiments
             }
 
             return relationUsersetExpression;
+        }
+
+        private bool IsDirectlyRelated(Dictionary<string, NamespaceUsersetExpression> namespaceConfigurations, RelationReference target, RelationReference source)
+        {
+            var relation = GetRelation(namespaceConfigurations, target);
+
+            return false;
         }
 
         private static string ToObjectString(RelationReference rr)
