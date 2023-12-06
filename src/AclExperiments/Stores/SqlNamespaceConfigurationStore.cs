@@ -49,6 +49,30 @@ namespace AclExperiments.Stores
             }
         }
 
+        public async Task<List<NamespaceUsersetExpression>> GetAllNamespaceConfigurationsAsync(string name, CancellationToken cancellationToken)
+        {
+            using (var connection = await _sqlConnectionFactory.GetDbConnectionAsync(cancellationToken).ConfigureAwait(false))
+            {
+                var query = new SqlQuery(connection).Proc("[Identity].[usp_NamespaceConfiguration_GetAll]");
+
+                var namespaceConfigurations = new List<SqlNamespaceConfiguration>();
+
+                using (var reader = await query.ExecuteDataReaderAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    while (await reader.ReadAsync().ConfigureAwait(false))
+                    {
+                        var namespaceConfiguration = MapToObject(reader);
+
+                        namespaceConfigurations.Add(namespaceConfiguration);
+                    }
+                }
+
+                return namespaceConfigurations
+                    .Select(sqlNamespaceConfiguration => NamespaceUsersetRewriteParser.Parse(sqlNamespaceConfiguration.Content))
+                    .ToList();                    
+            }
+        }
+
         public async Task<NamespaceUsersetExpression> GetNamespaceConfigurationAsync(string name, int version, CancellationToken cancellationToken)
         {
             using (var connection = await _sqlConnectionFactory.GetDbConnectionAsync(cancellationToken).ConfigureAwait(false))

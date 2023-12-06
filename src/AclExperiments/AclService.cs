@@ -5,6 +5,8 @@ using AclExperiments.Models;
 using AclExperiments.Stores;
 using AclExperiments.Utils;
 using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
 
 namespace AclExperiments
 {
@@ -494,5 +496,82 @@ namespace AclExperiments
         }
 
         #endregion Expand API
+
+        #region Reverse Expand API
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="namespace">Namespace of the Object</param>
+        /// <param name="relation">Relation between Object and Subject</param>
+        /// <param name="subject">Subject to query for</param>
+        public async Task ReverseExpandAsync(string @namespace, string relation, AclSubjectId subject, CancellationToken cancellationToken)
+        {
+            var namespaceConfigurations = await _namespaceConfigurationStore
+                .GetAllNamespaceConfigurationsAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            var namespaceConfigurationsLookup = namespaceConfigurations.ToDictionary(x => x.Name, x => x);
+
+
+
+        }
+
+        private RelationshipEdge[] GetRelationshipEdges(Dictionary<string, NamespaceUsersetExpression> namespaceConfigurations, RelationReference target, RelationReference source, ConcurrentDictionary<string, byte> visited)
+        {
+            var key = ToObjectString(target);
+
+            if(!visited.TryAdd(key, byte.MinValue))
+            {
+                return [];
+            }
+
+            var relation = GetRelationUsersetExpression(namespaceConfigurations, target);
+
+            return GetRelationshipEdgesWithTargetRewrite(
+                namespaceConfigurations, 
+                target,
+                source,
+                relation.Rewrite,
+                visited);
+
+        }
+
+        private RelationshipEdge[] GetRelationshipEdgesWithTargetRewrite(Dictionary<string, NamespaceUsersetExpression> namespaceConfigurations, RelationReference target, RelationReference source, UsersetExpression rewrite, ConcurrentDictionary<string, byte> visited)
+        {
+            switch(rewrite)
+            {
+                case ThisUsersetExpression thisUsersetExpression:
+                    return [];
+                case ComputedUsersetExpression computedUsersetExpression:
+                    return [];
+                case TupleToUsersetExpression tupleToUsersetExpression:
+                    return [];
+                case SetOperationUsersetExpression setOperationUsersetExpression:
+                    return [];
+            }
+        }
+
+        private RelationUsersetExpression GetRelationUsersetExpression(Dictionary<string, NamespaceUsersetExpression> namespaceConfigurations, RelationReference target)
+        {
+            if(!namespaceConfigurations.TryGetValue(target.Namespace, out var namespaceUserset)) 
+            {
+                throw new InvalidOperationException($"No Namespace named '{target.Namespace}' was found");
+            }
+
+            if(!namespaceUserset.Relations.TryGetValue(target.Relation, out var relationUsersetExpression))
+            {
+                throw new InvalidOperationException($"Namespace '{target.Namespace}' contains no Relation '{target.Relation}'");
+            }
+
+            return relationUsersetExpression;
+        }
+
+        private static string ToObjectString(RelationReference rr)
+        {
+            return $"{rr.Namespace}#{rr.Relation}";
+        }
+
+        #endregion Reverse Expand API
     }
 }

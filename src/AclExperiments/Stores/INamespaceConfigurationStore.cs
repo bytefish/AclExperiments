@@ -35,6 +35,13 @@ namespace AclExperiments.Stores
         Task<NamespaceUsersetExpression> GetLatestNamespaceConfigurationAsync(string name, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Returns all latest <see cref="NamespaceUsersetExpression"/>.
+        /// </summary>
+        /// <param name="cancellationToken">CancellationToken to cancel asynchronous processing</param>
+        /// <returns>The latest <see cref="NamespaceUsersetExpression"/></returns>
+        Task<List<NamespaceUsersetExpression>> GetAllNamespaceConfigurationsAsync(CancellationToken cancellationToken);
+
+        /// <summary>
         /// Returns a <see cref="NamespaceUsersetExpression"/> by its name and version.
         /// </summary>
         /// <param name="name">Name</param>
