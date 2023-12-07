@@ -11,7 +11,15 @@ namespace AclExperiments.Stores
         /// </summary>
         /// <param name="modelKey">Unique Key to identify the model</param>
         /// <param name="cancellationToken">CancellationToken to cancel asynchronous processing</param>
-        /// <returns>The latest <see cref="NamespaceUsersetExpression"/></returns>
+        /// <returns>The <see cref="AuthorizationModel"/> with the given key</returns>
         Task<AuthorizationModel> GetAuthorizationModelAsync(string modelKey, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Adds an <see cref="AuthorizationModel"/> to the database.
+        /// </summary>
+        /// <param name="authorizationModel">Authorization Model to store</param>
+        /// <param name="cancellationToken">CancellationToken to cancel asynchronous processing</param>
+        /// <returns>Awaitable Task</returns>
+        Task AddAuthorizationModelAsync(AuthorizationModel authorizationModel, CancellationToken cancellationToken);
     }
 }

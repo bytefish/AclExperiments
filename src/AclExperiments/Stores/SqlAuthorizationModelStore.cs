@@ -1,6 +1,6 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using AclExperiments.Database.AclExperiments.Database;
+using AclExperiments.Database;
 using AclExperiments.Database.Model;
 using AclExperiments.Expressions;
 using Microsoft.EntityFrameworkCore;
@@ -9,11 +9,11 @@ using System.Text.Json.Serialization;
 
 namespace AclExperiments.Stores
 {
-    public class AuthorizationModelStore : IAuthorizationModelStore
+    public class SqlAuthorizationModelStore : IAuthorizationModelStore
     {
         private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
 
-        public AuthorizationModelStore(IDbContextFactory<ApplicationDbContext> dbContextFactory)
+        public SqlAuthorizationModelStore(IDbContextFactory<ApplicationDbContext> dbContextFactory)
         {
             _dbContextFactory = dbContextFactory;
         }

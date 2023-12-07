@@ -498,14 +498,8 @@ namespace AclExperiments
         /// <param name="sourceNamespace">Namespace of the Object</param>
         /// <param name="sourceRelation">Relation between Object and Subject</param>
         /// <param name="subject">Subject to query for</param>
-        public async Task<List<RelationshipEdge>> ReverseExpandAsync(string targetNamespace, string targetRelation, string sourceNamespace, string? sourceRelation, CancellationToken cancellationToken)
+        public async Task<List<RelationshipEdge>> ReverseExpandAsync(TypeSystem typeSystem, string targetNamespace, string targetRelation, string sourceNamespace, string? sourceRelation, CancellationToken cancellationToken)
         {
-            var namespaceConfigurations = await _namespaceConfigurationStore
-                .GetAllNamespaceConfigurationsAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            var typeSystem = TypeSystem.CreateTypeSystem(namespaceConfigurations);
-
             var target = new RelationReference
             {
                 Namespace = targetNamespace,
@@ -577,7 +571,7 @@ namespace AclExperiments
                 res.Add(edge);
             }
 
-            var directlyRelatedTypes = typeSystem.GetDirectlyRelatedTypes(target.Namespace, target.Relation);
+            var directlyRelatedTypes = typeSystem.GetDirectlyRelatedTypes(target.Namespace, target.Relation!);
 
             foreach (var directlyRelatedType in directlyRelatedTypes)
             {

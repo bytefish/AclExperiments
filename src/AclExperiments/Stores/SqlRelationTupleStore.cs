@@ -1,16 +1,10 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using AclExperiments.Database.AclExperiments.Database;
-using AclExperiments.Database.Connections;
-using AclExperiments.Database.Extensions;
+using AclExperiments.Database;
 using AclExperiments.Database.Model;
-using AclExperiments.Database.Query;
 using AclExperiments.Models;
-using AclExperiments.Utils;
-using Microsoft.Data.SqlClient.Server;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
-using System.Data.Common;
 
 namespace AclExperiments.Stores
 {
@@ -100,17 +94,15 @@ namespace AclExperiments.Stores
             {
                 var tuples = await context.RelationTuples
                     .AsNoTracking()
-                    .Where(x => x.Namespace == relationTupleQuery.Namespace
-                        && x.Object == relationTupleQuery.Object
-                        && x.Relation == relationTupleQuery.Relation
+                    .Where(x => x.Namespace == @object.Namespace
+                        && x.Object == @object.Id
+                        && x.Relation == relation
                         && x.SubjectNamespace != null
                         && x.Subject != null
                         && x.SubjectRelation != null)
                     .ToListAsync(cancellationToken).ConfigureAwait(false);
 
-                return tuples
-                    .Select(ConvertToAclRelation)
-                    .ToList();
+                return tuples.Select(GetSubjectSet).ToList();
             }
         }
 
@@ -155,6 +147,16 @@ namespace AclExperiments.Stores
                         .ConfigureAwait(false);
                 }
             }
+        }
+
+        private static AclSubjectSet GetSubjectSet(SqlRelationTuple tuple)
+        {
+            return new AclSubjectSet
+            {
+                Namespace = tuple.Namespace,
+                Object = tuple.Object,
+                Relation = tuple.Relation,
+            };
         }
 
         private static AclRelation ConvertToAclRelation(SqlRelationTuple sqlRelationTuple)

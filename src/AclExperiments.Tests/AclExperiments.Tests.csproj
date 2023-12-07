@@ -11,30 +11,14 @@
 
   <ItemGroup>
     <None Remove="appsettings.json" />
-    <None Remove="Resources\authorization_model.json" />
-    <None Remove="Resources\doc.json" />
-    <None Remove="Resources\folder.json" />
-    <None Remove="Resources\group.json" />
-    <None Remove="Resources\user.json" />
+    <None Remove="Resources\google-drive.json" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Resources\authorization_model.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\folder.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\doc.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\group.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\user.json">
+    <Content Include="Resources\google-drive.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

@@ -4,7 +4,6 @@
     [Name]                          NVARCHAR(255)                               NOT NULL,
     [Description]                   NVARCHAR(1000)                              NOT NULL,
     [Content]                       NVARCHAR(MAX)                               NOT NULL,
-    [Version]                       INT                                         NOT NULL,
     [RowVersion]                    ROWVERSION                                  NULL,
     [LastEditedBy]                  INT                                         NOT NULL,
     [ValidFrom]                     DATETIME2 (7) GENERATED ALWAYS AS ROW START NOT NULL,

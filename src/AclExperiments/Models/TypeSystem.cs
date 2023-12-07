@@ -62,7 +62,7 @@ namespace AclExperiments.Models
 
         public static bool IsDirectlyRelated(this TypeSystem t, RelationReference target, RelationReference source)
         {
-            var directlyRelatedTypes = t.GetDirectlyRelatedTypes(target.Namespace, target.Relation);
+            var directlyRelatedTypes = t.GetDirectlyRelatedTypes(target.Namespace, target.Relation!);
 
             foreach (var directlyRelatedType in directlyRelatedTypes)
             {

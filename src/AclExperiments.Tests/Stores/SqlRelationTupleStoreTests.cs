@@ -1,5 +1,4 @@
-﻿using AclExperiments.Database.Connections;
-using AclExperiments.Models;
+﻿using AclExperiments.Models;
 using AclExperiments.Stores;
 using AclExperiments.Tests.Infrastructure;
 using Microsoft.Extensions.Configuration;
@@ -215,18 +214,6 @@ namespace AclExperiments.Tests.Stores
 
         public override void RegisterServices(IServiceCollection services)
         {
-            services.AddSingleton<ISqlConnectionFactory>((sp) =>
-            {
-                var connectionString = _configuration.GetConnectionString("ApplicationDatabase");
-
-                if (connectionString == null)
-                {
-                    throw new InvalidOperationException($"No Connection String named 'ApplicationDatabase' found in appsettings.json");
-                }
-
-                return new SqlServerConnectionFactory(connectionString);
-            });
-
             services.AddSingleton<IRelationTupleStore, SqlRelationTupleStore>();
         }
     }

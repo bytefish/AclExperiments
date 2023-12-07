@@ -26,7 +26,7 @@ namespace AclExperiments.Expressions
         public required string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Model Name.
+        /// Gets or sets the Model Description.
         /// </summary>
         [JsonPropertyName("description")]
         public required string Description { get; set; }

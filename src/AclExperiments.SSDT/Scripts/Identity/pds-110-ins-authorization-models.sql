@@ -1,7 +1,22 @@
-﻿{
-  "id": "unit-test-sample",
-  "name": "Unit Test Example Model",
-  "description": "Models a Google Drive"
+﻿PRINT 'Inserting [Identity].[NamespaceConfiguration] ...'
+GO
+
+-----------------------------------------------
+-- Global Parameters
+-----------------------------------------------
+DECLARE @ValidFrom datetime2(7) = '20130101'
+DECLARE @ValidTo datetime2(7) =  '99991231 23:59:59.9999999'
+
+
+-----------------------------------------------
+-- [Identity].[NamespaceConfiguration]
+-----------------------------------------------
+
+DECLARE @google_drive_json NVARCHAR(MAX) = N'
+{
+  "modelKey": "google-drive",
+  "name": "Google Drive",
+  "description": "An Authorization Model for Google Drive",
   "namespaces": [
     {
       "name": "user",
@@ -185,3 +200,45 @@
     }
   ]
 }
+';
+
+MERGE INTO [Identity].[AuthorizationModel] AS [Target]
+USING (VALUES 
+       (1, 'google-drive', 'Google Drive', 'Google Drive Example', @google_drive_json, 1, @ValidFrom, @ValidTo)
+) AS [Source]
+(
+     [AuthorizationModelID] 
+    ,[ModelKey] 
+    ,[Name] 
+    ,[Description]       
+    ,[Content]  
+    ,[LastEditedBy]    
+    ,[ValidFrom]       
+    ,[ValidTo]         
+)
+ON (
+    [Target].[ModelKey] = [Source].[ModelKey]
+)
+WHEN NOT MATCHED BY TARGET THEN
+    INSERT 
+        (
+             [AuthorizationModelID] 
+            ,[ModelKey] 
+            ,[Name] 
+            ,[Description]       
+            ,[Content]  
+            ,[LastEditedBy]    
+            ,[ValidFrom]       
+            ,[ValidTo]                 
+        )
+    VALUES 
+        (
+             [Source].[AuthorizationModelID] 
+            ,[Source].[ModelKey] 
+            ,[Source].[Name] 
+            ,[Source].[Description]       
+            ,[Source].[Content]  
+            ,[Source].[LastEditedBy]    
+            ,[Source].[ValidFrom]       
+            ,[Source].[ValidTo]         
+        );
