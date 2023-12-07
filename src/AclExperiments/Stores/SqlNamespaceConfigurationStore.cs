@@ -49,7 +49,7 @@ namespace AclExperiments.Stores
             }
         }
 
-        public async Task<List<NamespaceUsersetExpression>> GetAllNamespaceConfigurationsAsync(string name, CancellationToken cancellationToken)
+        public async Task<List<NamespaceUsersetExpression>> GetAllNamespaceConfigurationsAsync(CancellationToken cancellationToken)
         {
             using (var connection = await _sqlConnectionFactory.GetDbConnectionAsync(cancellationToken).ConfigureAwait(false))
             {
@@ -168,11 +168,6 @@ namespace AclExperiments.Stores
 
                 yield return sdr;
             }
-        }
-
-        public Task<List<NamespaceUsersetExpression>> GetAllNamespaceConfigurationsAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
         }
     }
 }

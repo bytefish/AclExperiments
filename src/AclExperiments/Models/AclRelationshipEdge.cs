@@ -45,7 +45,7 @@ namespace AclExperiments.Models
         /// <summary>
         /// 
         /// </summary>
-        public required string Relation { get; set; }
+        public string? Relation { get; set; }
     }
 
     /// <summary>

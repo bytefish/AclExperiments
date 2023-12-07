@@ -64,12 +64,12 @@ namespace AclExperiments.Models
         {
             var directlyRelatedTypes = t.GetDirectlyRelatedTypes(target.Namespace, target.Relation);
 
-            foreach (var type in directlyRelatedTypes)
+            foreach (var directlyRelatedType in directlyRelatedTypes)
             {
-                if (type.Namespace == target.Namespace)
+                if (source.Namespace == directlyRelatedType.Namespace)
                 {
                     // type with no relation
-                    if (type.Relation == null && source.Relation == null)
+                    if (string.IsNullOrWhiteSpace(directlyRelatedType.Relation) && string.IsNullOrWhiteSpace(source.Relation))
                     {
                         return true;
                     }
@@ -77,9 +77,9 @@ namespace AclExperiments.Models
                     // TODO Are Wildcards useful?
 
                     // type with relation
-                    if (!string.IsNullOrWhiteSpace(type.Relation) && !string.IsNullOrWhiteSpace(source.Relation))
+                    if (!string.IsNullOrWhiteSpace(directlyRelatedType.Relation) && !string.IsNullOrWhiteSpace(source.Relation))
                     {
-                        if (type.Relation == source.Relation)
+                        if (directlyRelatedType.Relation == source.Relation)
                         {
                             return true;
                         }

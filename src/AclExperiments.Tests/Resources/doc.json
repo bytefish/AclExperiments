@@ -3,17 +3,17 @@
   "version": 1,
   "metadata": {
     "relations": {
-      "owner": {
-        "directly_related_types": [
-          {
-            "namespace": "user"
-          }
-        ]
-      },
       "parent": {
         "directly_related_types": [
           {
             "namespace": "folder"
+          }
+        ]
+      },
+      "owner": {
+        "directly_related_types": [
+          {
+            "namespace": "user"
           }
         ]
       },

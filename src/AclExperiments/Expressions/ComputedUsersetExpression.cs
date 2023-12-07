@@ -27,6 +27,6 @@ namespace AclExperiments.Expressions
         /// Gets or sets the Relation.
         /// </summary>
         [JsonPropertyName("relation")]
-        public string? Relation { get; set; }
+        public required string Relation { get; set; }
     }
 }
