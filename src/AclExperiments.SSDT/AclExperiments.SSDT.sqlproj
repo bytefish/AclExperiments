@@ -61,7 +61,6 @@
     <Folder Include="Identity\Sequences" />
     <Folder Include="Identity\Stored Procedures" />
     <Folder Include="Identity\Tables" />
-    <Folder Include="Identity\User Defined Types" />
   </ItemGroup>
   <ItemGroup>
     <PostDeploy Include="Scripts\Script.PostDeployment1.sql" />
@@ -77,17 +76,14 @@
     <Build Include="Identity\Tables\User.sql" />
     <None Include="Scripts\Identity\pds-100-ins-identity-users.sql" />
     <None Include="Scripts\Identity\pds-120-ins-identity-relation-tuples.sql" />
-    <Build Include="Identity\Tables\NamespaceConfiguration.sql" />
-    <Build Include="Identity\Sequences\sq_NamespaceConfiguration.sql" />
+    <Build Include="Identity\Tables\AuthorizationModel.sql" />
+    <Build Include="Identity\Sequences\sq_AuthorizationModel.sql" />
     <Build Include="Identity\Indexes\UX_NamespaceConfiguration_Name_Version.sql" />
     <None Include="Scripts\Identity\pds-110-ins-namespace-configurations.sql" />
     <Build Include="Identity\Stored Procedures\usp_Database_ResetForTests.sql" />
-    <Build Include="Identity\User Defined Types\udt_RelationTupleType.sql" />
-    <Build Include="Identity\User Defined Types\udt_NamespaceConfigurationType.sql" />
     <Build Include="Identity\Stored Procedures\usp_RelationTuple_BulkDelete.sql" />
     <Build Include="Identity\Stored Procedures\usp_NamespaceConfiguration_GetLatestByName.sql" />
     <Build Include="Identity\Stored Procedures\usp_NamespaceConfiguration_GetByNameAndVersion.sql" />
-    <Build Include="Identity\User Defined Types\udt_UserType.sql" />
     <Build Include="Identity\Stored Procedures\usp_RelationTuple_BulkInsert.sql" />
     <Build Include="Identity\Stored Procedures\usp_NamespaceConfiguration_BulkInsert.sql" />
     <Build Include="Identity\Stored Procedures\usp_NamespaceConfiguration_BulkDelete.sql" />

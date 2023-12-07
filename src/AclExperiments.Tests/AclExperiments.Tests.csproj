@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <None Remove="appsettings.json" />
+    <None Remove="Resources\authorization_model.json" />
     <None Remove="Resources\doc.json" />
     <None Remove="Resources\folder.json" />
     <None Remove="Resources\group.json" />
@@ -20,6 +21,9 @@
   <ItemGroup>
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\authorization_model.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Resources\folder.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

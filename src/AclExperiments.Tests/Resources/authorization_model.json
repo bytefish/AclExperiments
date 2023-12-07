@@ -1,0 +1,187 @@
+﻿{
+  "id": "unit-test-sample",
+  "name": "Unit Test Example Model",
+  "description": "Models a Google Drive"
+  "namespaces": [
+    {
+      "name": "user",
+      "version": 1,
+      "metadata": {
+        "relations": {}
+      },
+      "relations": {}
+    },
+    {
+      "name": "group",
+      "version": 1,
+      "metadata": {
+        "relations": {
+          "member": {
+            "directly_related_types": [
+              {
+                "namespace": "user"
+              }
+            ]
+          }
+        }
+      },
+      "relations": {
+        "member": {
+          "$type": "_this"
+        }
+      }
+    },
+    {
+      "name": "folder",
+      "version": 1,
+      "metadata": {
+        "relations": {
+          "owner": {
+            "directly_related_types": [
+              {
+                "namespace": "user"
+              }
+            ]
+          },
+          "parent": {
+            "directly_related_types": [
+              {
+                "namespace": "folder"
+              }
+            ]
+          },
+          "viewer": {
+            "directly_related_types": [
+              {
+                "namespace": "user"
+              },
+              {
+                "namespace": "group",
+                "relation": "member"
+              }
+            ]
+          }
+        }
+      },
+      "relations": {
+        "parent": {
+          "$type": "_this"
+        },
+        "owner": {
+          "$type": "_this"
+        },
+        "editor": {
+          "$type": "set_operation",
+          "operation": "union",
+          "children": [
+            {
+              "$type": "_this"
+            },
+            {
+              "$type": "computed_userset",
+              "relation": "owner"
+            }
+          ]
+        },
+        "viewer": {
+          "$type": "set_operation",
+          "operation": "union",
+          "children": [
+            {
+              "$type": "_this"
+            },
+            {
+              "$type": "computed_userset",
+              "relation": "owner"
+            },
+            {
+              "$type": "tuple_to_userset",
+              "tupleset": {
+                "relation": "parent"
+              },
+              "computed_userset": {
+                "relation": "viewer"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "doc",
+      "version": 1,
+      "metadata": {
+        "relations": {
+          "parent": {
+            "directly_related_types": [
+              {
+                "namespace": "folder"
+              }
+            ]
+          },
+          "owner": {
+            "directly_related_types": [
+              {
+                "namespace": "user"
+              }
+            ]
+          },
+          "viewer": {
+            "directly_related_types": [
+              {
+                "namespace": "user"
+              },
+              {
+                "namespace": "group",
+                "relation": "member"
+              }
+            ]
+          }
+        }
+      },
+      "relations": {
+        "parent": {
+          "$type": "_this"
+        },
+        "owner": {
+          "$type": "_this"
+        },
+        "editor": {
+          "$type": "set_operation",
+          "operation": "union",
+          "children": [
+            {
+              "$type": "_this"
+            },
+            {
+              "$type": "computed_userset",
+              "relation": "owner"
+            }
+          ]
+        },
+        "viewer": {
+          "$type": "set_operation",
+          "operation": "union",
+          "children": [
+            {
+              "$type": "_this"
+            },
+            {
+              "$type": "computed_userset",
+              "relation": "owner"
+            },
+            {
+              "$type": "tuple_to_userset",
+              "tupleset": {
+                "relation": "parent"
+              },
+              "computed_userset": {
+                "relation": "viewer"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
