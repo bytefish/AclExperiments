@@ -6,6 +6,7 @@ using AclExperiments.Stores;
 using AclExperiments.Utils;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace AclExperiments
@@ -499,83 +500,137 @@ namespace AclExperiments
 
         #region Reverse Expand API
 
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        ///// <param name="namespace">Namespace of the Object</param>
-        ///// <param name="relation">Relation between Object and Subject</param>
-        ///// <param name="subject">Subject to query for</param>
-        //public async Task ReverseExpandAsync(string @namespace, string relation, AclSubjectId subject, CancellationToken cancellationToken)
-        //{
-        //    var namespaceConfigurations = await _namespaceConfigurationStore
-        //        .GetAllNamespaceConfigurationsAsync(cancellationToken)
-        //        .ConfigureAwait(false);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="namespace">Namespace of the Object</param>
+        /// <param name="relation">Relation between Object and Subject</param>
+        /// <param name="subject">Subject to query for</param>
+        public async Task ReverseExpandAsync(string @namespace, string relation, AclSubjectId subject, CancellationToken cancellationToken)
+        {
+            var namespaceConfigurations = await _namespaceConfigurationStore
+                .GetAllNamespaceConfigurationsAsync(cancellationToken)
+                .ConfigureAwait(false);
 
-        //    var namespaceConfigurationsLookup = namespaceConfigurations.ToDictionary(x => x.Name, x => x);
-        //}
+            var typesystem = TypeSystem.CreateTypeSystem(namespaceConfigurations);
 
-        //private RelationshipEdge[] GetRelationshipEdges(Dictionary<string, NamespaceUsersetExpression> namespaceConfigurations, RelationReference target, RelationReference source, ConcurrentDictionary<string, byte> visited)
-        //{
-        //    var key = ToObjectString(target);
+            var namespaceConfigurationsLookup = namespaceConfigurations.ToDictionary(x => x.Name, x => x);
+        }
 
-        //    if(!visited.TryAdd(key, byte.MinValue))
-        //    {
-        //        return [];
-        //    }
+        private List<RelationshipEdge> GetRelationshipEdges(TypeSystem typeSystem, RelationReference target, RelationReference source, ConcurrentDictionary<string, byte> visited)
+        {
+            var key = ToObjectString(target);
 
-        //    var relation = GetRelation(namespaceConfigurations, target);
+            if (!visited.TryAdd(key, byte.MinValue))
+            {
+                return [];
+            }
 
-        //    return GetRelationshipEdgesWithTargetRewrite(
-        //        namespaceConfigurations, 
-        //        target,
-        //        source,
-        //        relation.Rewrite,
-        //        visited);
-        //}
+            var rewrite = typeSystem.GetRelation(target.Namespace, target.Relation);
 
-        //private RelationshipEdge[] GetRelationshipEdgesWithTargetRewrite(Dictionary<string, NamespaceUsersetExpression> namespaceConfigurations, RelationReference target, RelationReference source, UsersetExpression rewrite, ConcurrentDictionary<string, byte> visited)
-        //{
-        //    switch(rewrite)
-        //    {
-        //        case ThisUsersetExpression thisUsersetExpression:
-        //            return [];
-        //        case ComputedUsersetExpression computedUsersetExpression:
-        //            return [];
-        //        case TupleToUsersetExpression tupleToUsersetExpression:
-        //            return [];
-        //        case SetOperationUsersetExpression setOperationUsersetExpression:
-        //            return [];
-        //    }
-        //}
+            return GetRelationshipEdgesWithTargetRewrite(
+                typeSystem,
+                target,
+                source,
+                rewrite,
+                visited);
+        }
 
-        //private RelationUsersetExpression GetRelation(Dictionary<string, NamespaceUsersetExpression> namespaceConfigurations, RelationReference target)
-        //{
-        //    if(!namespaceConfigurations.TryGetValue(target.Namespace, out var namespaceUserset)) 
-        //    {
-        //        throw new InvalidOperationException($"No Namespace named '{target.Namespace}' was found");
-        //    }
+        private List<RelationshipEdge> GetRelationshipEdgesWithTargetRewrite(TypeSystem typeSystem, RelationReference target, RelationReference source, UsersetExpression rewrite, ConcurrentDictionary<string, byte> visited)
+        {
+            switch (rewrite)
+            {
+                case ThisUsersetExpression thisUsersetExpression:
+                    return GetRelationshipEdgesWithTargetRewrite_This(typeSystem, target, source, visited);
+                case ComputedUsersetExpression computedUsersetExpression:
+                    return GetRelationshipEdgesWithTargetRewrite_ComputedUserset(typeSystem, target, source, computedUsersetExpression, visited); ;
+                case TupleToUsersetExpression tupleToUsersetExpression:
+                    return [];
+                case SetOperationUsersetExpression setOperationUsersetExpression:
+                    return [];
+            }
 
-        //    if(!namespaceUserset.Relations.TryGetValue(target.Relation, out var relationUsersetExpression))
-        //    {
-        //        throw new InvalidOperationException($"Namespace '{target.Namespace}' contains no Relation '{target.Relation}'");
-        //    }
+            return [];
+        }
 
-        //    return relationUsersetExpression;
-        //}
+        private List<RelationshipEdge> GetRelationshipEdgesWithTargetRewrite_This(TypeSystem typeSystem, RelationReference target, RelationReference source, ConcurrentDictionary<string, byte> visited)
+        {
+            var res = new List<RelationshipEdge>();
 
-        //private bool IsDirectlyRelated(Dictionary<string, NamespaceUsersetExpression> namespaceConfigurations, RelationReference target, RelationReference source)
-        //{
-        //    var relation = GetRelation(namespaceConfigurations, target);
+            bool isDirectlyRelated = typeSystem.IsDirectlyRelated(target, source);
 
+            if (isDirectlyRelated)
+            {
+                var edge = new RelationshipEdge
+                {
+                    RelationEdgeType = RelationEdgeTypeEnum.DirectEdge,
+                    TargetReference = target,
+                    TargetIsIntersectionOrExclusion = false
+                };
 
+                res.Add(edge);
+            }
 
-        //    return false;
-        //}
+            var directlyRelatedTypes = typeSystem.GetDirectlyRelatedTypes(target.Namespace, target.Relation);
 
-        //private static string ToObjectString(RelationReference rr)
-        //{
-        //    return $"{rr.Namespace}#{rr.Relation}";
-        //}
+            foreach(var directlyRelatedType in directlyRelatedTypes)
+            {
+                if(directlyRelatedType.Relation != null)
+                {
+                    var directRelationReference = new RelationReference
+                    {
+                        Namespace = directlyRelatedType.Namespace,
+                        Relation = directlyRelatedType.Relation
+                    };
+
+                    var edges = GetRelationshipEdges(typeSystem, directRelationReference, source, visited);
+
+                    res.AddRange(edges);
+                }
+            }
+
+            return res;
+        }
+
+        private List<RelationshipEdge> GetRelationshipEdgesWithTargetRewrite_ComputedUserset(TypeSystem typeSystem, RelationReference target, RelationReference source, ComputedUsersetExpression computedUsersetExpression, ConcurrentDictionary<string, byte> visited)
+        {
+            var res = new List<RelationshipEdge>();
+
+            var sourceMatchesRewritten = target.Namespace == source.Namespace && computedUsersetExpression.Relation == source.Relation;
+
+            if(sourceMatchesRewritten)
+            {
+                var targetReference = new RelationReference {
+                    Namespace = target.Namespace,
+                    Relation = target.Relation
+                };
+
+                var computedRelationshipEdge = new RelationshipEdge
+                {
+                    RelationEdgeType = RelationEdgeTypeEnum.ComputedUserset,
+                    TargetReference = targetReference,
+                    TargetIsIntersectionOrExclusion = false,
+                };
+
+                res.Add(computedRelationshipEdge);
+            }
+
+            if(computedUsersetExpression.Relation != null)
+            {
+                var computedTargetReference = new RelationReference { Namespace = target.Namespace, Relation = computedUsersetExpression.Relation };
+                
+                var computedTargetEdges = GetRelationshipEdges(typeSystem, computedTargetReference, source, visited);
+
+                res.AddRange(computedTargetEdges);
+            }
+            
+            return res;
+        }
+
+        private static string ToObjectString(RelationReference rr)
+        {
+            return $"{rr.Namespace}#{rr.Relation}";
+        }
 
         #endregion Reverse Expand API
     }
