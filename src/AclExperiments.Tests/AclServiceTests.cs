@@ -66,8 +66,8 @@ namespace AclExperiments.Tests
         public async Task CheckAsync_CheckUserPermissions()
         {
             // Arrange
-            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("doc", 1, File.ReadAllText("Resources/doc.nsconfig"), 1, default);
-            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("folder", 1, File.ReadAllText("Resources/folder.nsconfig"), 1, default);
+            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("doc", 1, File.ReadAllText("Resources/doc.json"), 1, default);
+            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("folder", 1, File.ReadAllText("Resources/folder.json"), 1, default);
 
             var aclRelations = new[]
             {
@@ -152,8 +152,8 @@ namespace AclExperiments.Tests
         public async Task Expand_ExpandUsersetRewrites()
         {
             // Arrange
-            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("doc", 1, File.ReadAllText("Resources/doc.nsconfig"), 1, default);
-            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("folder", 1, File.ReadAllText("Resources/folder.nsconfig"), 1, default);
+            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("doc", 1, File.ReadAllText("Resources/doc.json"), 1, default);
+            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("folder", 1, File.ReadAllText("Resources/folder.json"), 1, default);
 
             var aclRelations = new[]
             {

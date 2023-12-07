@@ -26,21 +26,21 @@ namespace AclExperiments.Tests.Stores
         public async Task GetLatestNamespaceConfiguration_MultipleNamespaceConfigurationVersions()
         {
             // Arrange
-            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("doc", 1, "name: \"doc\"", 1, default);
-            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("doc", 2, "name: \"test\"", 1, default);
+            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("doc", 1, File.ReadAllText("Resources/doc.json"), 1, default);
+            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("doc", 2, File.ReadAllText("Resources/folder.json"), 1, default);
 
             // Act
             var result = await _namespaceConfigurationStore.GetLatestNamespaceConfigurationAsync("doc", default);
 
             // Assert
-            Assert.AreEqual("test", result.Name);
+            Assert.AreEqual("folder", result.Name);
         }
 
         [TestMethod]
         public async Task GetLatestNamespaceConfiguration_ParsesNamespaceConfigurationCorrectly()
         {
             // Arrange
-            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("doc", 1, File.ReadAllText("Resources/doc.nsconfig"), 1, default);
+            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("doc", 1, File.ReadAllText("Resources/doc.json"), 1, default);
 
             // Act
             var result = await _namespaceConfigurationStore.GetLatestNamespaceConfigurationAsync("doc", default);
