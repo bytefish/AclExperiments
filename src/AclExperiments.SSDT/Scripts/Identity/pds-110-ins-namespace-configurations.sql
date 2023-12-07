@@ -11,60 +11,173 @@ DECLARE @ValidTo datetime2(7) =  '99991231 23:59:59.9999999'
 -----------------------------------------------
 -- [Identity].[NamespaceConfiguration]
 -----------------------------------------------
-DECLARE @nsconfig_doc NVARCHAR(MAX) = '\
-﻿name: "doc"\
-    relation { name: "owner" }\
-    \
-    relation {\
-        name: "editor"\
-\
-        userset_rewrite {\
-            union {\
-                child { _this {} }\
-                child { computed_userset { relation: "owner" } }\
-            } } }\
-    \
-    relation {\
-        name: "viewer"\
-        userset_rewrite {\
-            union {\
-                child { _this {} }\
-                child { computed_userset { relation: "editor" } }\
-                child { tuple_to_userset {\
-                    tupleset { \
-                        relation: "parent" \
-                    }\
-                    computed_userset {\
-                        relation: "viewer"\
-                } } }\
-} } }';
 
-DECLARE @nsconfig_folder NVARCHAR(MAX) = 'name: "folder" \
-\
-relation { name: "parent" }\
-\
-relation { name: "owner" }\
-\
-relation {\
-  name: "editor"\
-  userset_rewrite {\
-    union {\
-      child { _this {} }\
-      child { computed_userset { relation: "owner" } }\
-}}}\
-\
-relation {\
-  name: "viewer"\
-  userset_rewrite {\
-  union {\
-    child { _this {} }\
-    child { computed_userset { relation: "editor" } }\
-}}}';
+DECLARE @user_json NVARCHAR(MAX) = N'
+{
+  "name": "user",
+  "version": 1,
+  "metadata": {
+    "relations": {}
+  },
+  "relations": {}
+}
+';
+
+DECLARE @doc_json NVARCHAR(MAX) = N'
+{
+  "name": "doc",
+  "version": 1,
+  "metadata": {
+    "relations": {
+      "owner": {
+        "directly_related_types": [
+          {
+            "namespace": "user"
+          }
+        ]
+      },
+      "parent": {
+        "directly_related_types": [
+          {
+            "namespace": "folder"
+          }
+        ]
+      },
+      "viewer": {
+        "directly_related_types": [
+          {
+            "namespace": "user"
+          }
+        ]
+      }
+    }
+  },
+  "relations": {
+    "parent": {
+      "$type": "_this"
+    },
+    "owner": {
+      "$type": "_this"
+    },
+    "editor": {
+      "$type": "set_operation",
+      "operation": "union",
+      "children": [
+        {
+          "$type": "_this"
+        },
+        {
+          "$type": "computed_userset",
+          "relation": "owner"
+        }
+      ]
+    },
+    "viewer": {
+      "$type": "set_operation",
+      "operation": "union",
+      "children": [
+        {
+          "$type": "_this"
+        },
+        {
+          "$type": "computed_userset",
+          "relation": "owner"
+        },
+        {
+          "$type": "tuple_to_userset",
+          "tupleset": {
+            "relation": "parent"
+          },
+          "computed_userset": {
+            "relation": "viewer"
+          }
+        }
+      ]
+    }
+  }
+}
+';
+
+DECLARE @folder_json NVARCHAR(MAX) = N'
+{
+  "name": "folder",
+  "version": 1,
+  "metadata": {
+    "relations": {
+      "owner": {
+        "directly_related_types": [
+          {
+            "namespace": "user"
+          }
+        ]
+      },
+      "parent": {
+        "directly_related_types": [
+          {
+            "namespace": "folder"
+          }
+        ]
+      },
+      "viewer": {
+        "directly_related_types": [
+          {
+            "namespace": "user"
+          }
+        ]
+      }
+    }
+  },
+  "relations": {
+    "parent": {
+      "$type": "_this"
+    },
+    "owner": {
+      "$type": "_this"
+    },
+    "editor": {
+      "$type": "set_operation",
+      "operation": "union",
+      "children": [
+        {
+          "$type": "_this"
+        },
+        {
+          "$type": "computed_userset",
+          "relation": "owner"
+        }
+      ]
+    },
+    "viewer": {
+      "$type": "set_operation",
+      "operation": "union",
+      "children": [
+        {
+          "$type": "_this"
+        },
+        {
+          "$type": "computed_userset",
+          "relation": "owner"
+        },
+        {
+          "$type": "tuple_to_userset",
+          "tupleset": {
+            "relation": "parent"
+          },
+          "computed_userset": {
+            "relation": "viewer"
+          }
+        }
+      ]
+    }
+  }
+}
+';
 
 MERGE INTO [Identity].[NamespaceConfiguration] AS [Target]
 USING (VALUES 
-       (1, 'doc',            1,      @nsconfig_doc, 1, @ValidFrom, @ValidTo) 
-      ,(2, 'folder',         1,      @nsconfig_folder, 1, @ValidFrom, @ValidTo) 
+       (1, 'user',      1,      @user_json, 1, @ValidFrom, @ValidTo) 
+      ,(2, 'folder',    1,      @folder_json, 1, @ValidFrom, @ValidTo) 
+      ,(3, 'doc',       1,      @doc_json, 1, @ValidFrom, @ValidTo) 
 ) AS [Source]
 (
      [NamespaceConfigurationID] 
