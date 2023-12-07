@@ -1,14 +1,72 @@
 ﻿{
-  "name": "doc",
+  "name": "folder",
+  "version": 1,
   "metadata": {
-    "relations": [
-      {
-        "name": "owner",
+    "relations": {
+      "owner": {
         "directly_related_types": [
-          "user"
+          {
+            "namespace": "user"
+          }
+        ]
+      },
+      "parent": {
+        "directly_related_types": [
+          {
+            "namespace": "folder"
+          }
+        ]
+      },
+      "viewer": {
+        "directly_related_types": [
+          {
+            "namespace": "user"
+          }
         ]
       }
-    ]
+    }
   },
-
+  "relations": {
+    "parent": {
+      "$type": "_this"
+    },
+    "owner": {
+      "$type": "_this"
+    },
+    "editor": {
+      "$type": "set_operation",
+      "operation": "union",
+      "children": [
+        {
+          "$type": "_this"
+        },
+        {
+          "$type": "computed_userset",
+          "relation": "owner"
+        }
+      ]
+    },
+    "viewer": {
+      "$type": "set_operation",
+      "operation": "union",
+      "children": [
+        {
+          "$type": "_this"
+        },
+        {
+          "$type": "computed_userset",
+          "relation": "owner"
+        },
+        {
+          "$type": "tuple_to_userset",
+          "tupleset": {
+            "relation": "parent"
+          },
+          "computed_userset": {
+            "relation": "viewer"
+          }
+        }
+      ]
+    }
+  }
 }
