@@ -1,27 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
 namespace AclExperiments.Expressions
 {
     public record MetadataExpression : UsersetExpression
     {
-        public required List<MetadataRelationExpression> Relations { get; set; }
+        [JsonPropertyName("relations")]
+        public Dictionary<string, MetadataRelationExpression> Relations { get; set; } = new();
     }
 
     public record MetadataRelationExpression : UsersetExpression
     {
-        public required string Name { get; set; }
-
-        public List<DirectlyRelatedUserType> DirectlyRelatedUserTypes { get; set; } = new();
+        [JsonPropertyName("directly_related_types")]
+        public List<DirectlyRelatedType> DirectlyRelatedTypes { get; set; } = new();
     }
 
-    public record DirectlyRelatedUserType : UsersetExpression
+    public record DirectlyRelatedType : UsersetExpression
     {
+        [JsonPropertyName("namespace")]
         public required string Namespace { get; set; }
 
-        public required string? Relation { get; set; }
+        [JsonPropertyName("relation")]
+        public string? Relation { get; set; }
     }
 }

@@ -1,5 +1,7 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Text.Json.Serialization;
+
 namespace AclExperiments.Expressions
 {
     /// <summary>
@@ -8,8 +10,10 @@ namespace AclExperiments.Expressions
     /// </summary>
     public record RelationUsersetExpression : UsersetExpression
     {
+        [JsonPropertyName("name")]
         public required string Name { get; set; }
 
+        [JsonPropertyName("rewrite")]
         public UsersetExpression Rewrite { get; set; } = new ThisUsersetExpression();
     }
 }

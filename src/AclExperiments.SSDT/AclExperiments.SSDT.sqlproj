@@ -94,5 +94,6 @@
     <Build Include="Identity\Stored Procedures\usp_RelationTuple_GetRowCount.sql" />
     <Build Include="Identity\Stored Procedures\usp_RelationTuple_GetSubjectSets.sql" />
     <Build Include="Identity\Stored Procedures\usp_RelationTuple_GetRelationTuples.sql" />
+    <Build Include="Identity\Stored Procedures\usp_NamespaceConfiguration_GetAll.sql" />
   </ItemGroup>
 </Project>

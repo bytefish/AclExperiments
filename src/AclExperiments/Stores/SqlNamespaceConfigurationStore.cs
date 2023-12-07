@@ -2,13 +2,13 @@
 
 using AclExperiments.Database.Model;
 using AclExperiments.Expressions;
-using AclExperiments.Parser;
 using Microsoft.Data.SqlClient.Server;
 using System.Data.Common;
 using System.Data;
 using AclExperiments.Database.Extensions;
 using AclExperiments.Database.Connections;
 using AclExperiments.Database.Query;
+using System.Text.Json;
 
 namespace AclExperiments.Stores
 {
@@ -45,7 +45,7 @@ namespace AclExperiments.Stores
                     throw new InvalidOperationException($"No Namespace Configuration with Name '{name}' found");
                 }
 
-                return NamespaceUsersetRewriteParser.Parse(namespaceConfigurations[0].Content);
+                return JsonSerializer.Deserialize<NamespaceUsersetExpression>(namespaceConfigurations[0].Content)!;
             }
         }
 
@@ -68,7 +68,7 @@ namespace AclExperiments.Stores
                 }
 
                 return namespaceConfigurations
-                    .Select(sqlNamespaceConfiguration => NamespaceUsersetRewriteParser.Parse(sqlNamespaceConfiguration.Content))
+                    .Select(sqlNamespaceConfiguration => JsonSerializer.Deserialize<NamespaceUsersetExpression>(sqlNamespaceConfiguration.Content)!)
                     .ToList();                    
             }
         }
@@ -98,7 +98,7 @@ namespace AclExperiments.Stores
                     throw new InvalidOperationException($"No Namespace Configuration with Name '{name}' found");
                 }
 
-                return NamespaceUsersetRewriteParser.Parse(namespaceConfigurations[0].Content);
+                return JsonSerializer.Deserialize<NamespaceUsersetExpression>(namespaceConfigurations[0].Content)!;
             }
         }
 
@@ -168,6 +168,11 @@ namespace AclExperiments.Stores
 
                 yield return sdr;
             }
+        }
+
+        public Task<List<NamespaceUsersetExpression>> GetAllNamespaceConfigurationsAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }

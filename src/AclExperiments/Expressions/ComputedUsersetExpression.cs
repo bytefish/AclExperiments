@@ -1,5 +1,7 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Text.Json.Serialization;
+
 namespace AclExperiments.Expressions
 {
     /// <summary>
@@ -12,16 +14,19 @@ namespace AclExperiments.Expressions
         /// <summary>
         /// Gets or sets the Namespace.
         /// </summary>
+        [JsonPropertyName("namespace")]
         public string? Namespace { get; set; }
 
         /// <summary>
         /// Gets or sets the Object,
         /// </summary>
+        [JsonPropertyName("object")]
         public string? Object { get; set; }
 
         /// <summary>
         /// Gets or sets the Relation.
         /// </summary>
+        [JsonPropertyName("relation")]
         public string? Relation { get; set; }
     }
 }

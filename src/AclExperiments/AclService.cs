@@ -53,12 +53,12 @@ namespace AclExperiments
         /// <exception cref="InvalidOperationException">Thrown, if the Relation isn't configured in the Namespace Configuration</exception>
         private static UsersetExpression GetUsersetRewrite(NamespaceUsersetExpression namespaceUsersetExpression, string relation)
         {
-            if (!namespaceUsersetExpression.Relations.TryGetValue(relation, out var relationUsersetExpression))
+            if (!namespaceUsersetExpression.Relations.TryGetValue(relation, out var rewrite))
             {
                 throw new InvalidOperationException($"Namespace '{namespaceUsersetExpression.Name}' has no Relation '{relation}'");
             }
 
-            return relationUsersetExpression.Rewrite;
+            return rewrite;
         }
 
         /// <summary>
@@ -499,81 +499,83 @@ namespace AclExperiments
 
         #region Reverse Expand API
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="namespace">Namespace of the Object</param>
-        /// <param name="relation">Relation between Object and Subject</param>
-        /// <param name="subject">Subject to query for</param>
-        public async Task ReverseExpandAsync(string @namespace, string relation, AclSubjectId subject, CancellationToken cancellationToken)
-        {
-            var namespaceConfigurations = await _namespaceConfigurationStore
-                .GetAllNamespaceConfigurationsAsync(cancellationToken)
-                .ConfigureAwait(false);
+        ///// <summary>
+        ///// 
+        ///// </summary>
+        ///// <param name="namespace">Namespace of the Object</param>
+        ///// <param name="relation">Relation between Object and Subject</param>
+        ///// <param name="subject">Subject to query for</param>
+        //public async Task ReverseExpandAsync(string @namespace, string relation, AclSubjectId subject, CancellationToken cancellationToken)
+        //{
+        //    var namespaceConfigurations = await _namespaceConfigurationStore
+        //        .GetAllNamespaceConfigurationsAsync(cancellationToken)
+        //        .ConfigureAwait(false);
 
-            var namespaceConfigurationsLookup = namespaceConfigurations.ToDictionary(x => x.Name, x => x);
-        }
+        //    var namespaceConfigurationsLookup = namespaceConfigurations.ToDictionary(x => x.Name, x => x);
+        //}
 
-        private RelationshipEdge[] GetRelationshipEdges(Dictionary<string, NamespaceUsersetExpression> namespaceConfigurations, RelationReference target, RelationReference source, ConcurrentDictionary<string, byte> visited)
-        {
-            var key = ToObjectString(target);
+        //private RelationshipEdge[] GetRelationshipEdges(Dictionary<string, NamespaceUsersetExpression> namespaceConfigurations, RelationReference target, RelationReference source, ConcurrentDictionary<string, byte> visited)
+        //{
+        //    var key = ToObjectString(target);
 
-            if(!visited.TryAdd(key, byte.MinValue))
-            {
-                return [];
-            }
+        //    if(!visited.TryAdd(key, byte.MinValue))
+        //    {
+        //        return [];
+        //    }
 
-            var relation = GetRelation(namespaceConfigurations, target);
+        //    var relation = GetRelation(namespaceConfigurations, target);
 
-            return GetRelationshipEdgesWithTargetRewrite(
-                namespaceConfigurations, 
-                target,
-                source,
-                relation.Rewrite,
-                visited);
-        }
+        //    return GetRelationshipEdgesWithTargetRewrite(
+        //        namespaceConfigurations, 
+        //        target,
+        //        source,
+        //        relation.Rewrite,
+        //        visited);
+        //}
 
-        private RelationshipEdge[] GetRelationshipEdgesWithTargetRewrite(Dictionary<string, NamespaceUsersetExpression> namespaceConfigurations, RelationReference target, RelationReference source, UsersetExpression rewrite, ConcurrentDictionary<string, byte> visited)
-        {
-            switch(rewrite)
-            {
-                case ThisUsersetExpression thisUsersetExpression:
-                    return [];
-                case ComputedUsersetExpression computedUsersetExpression:
-                    return [];
-                case TupleToUsersetExpression tupleToUsersetExpression:
-                    return [];
-                case SetOperationUsersetExpression setOperationUsersetExpression:
-                    return [];
-            }
-        }
+        //private RelationshipEdge[] GetRelationshipEdgesWithTargetRewrite(Dictionary<string, NamespaceUsersetExpression> namespaceConfigurations, RelationReference target, RelationReference source, UsersetExpression rewrite, ConcurrentDictionary<string, byte> visited)
+        //{
+        //    switch(rewrite)
+        //    {
+        //        case ThisUsersetExpression thisUsersetExpression:
+        //            return [];
+        //        case ComputedUsersetExpression computedUsersetExpression:
+        //            return [];
+        //        case TupleToUsersetExpression tupleToUsersetExpression:
+        //            return [];
+        //        case SetOperationUsersetExpression setOperationUsersetExpression:
+        //            return [];
+        //    }
+        //}
 
-        private RelationUsersetExpression GetRelation(Dictionary<string, NamespaceUsersetExpression> namespaceConfigurations, RelationReference target)
-        {
-            if(!namespaceConfigurations.TryGetValue(target.Namespace, out var namespaceUserset)) 
-            {
-                throw new InvalidOperationException($"No Namespace named '{target.Namespace}' was found");
-            }
+        //private RelationUsersetExpression GetRelation(Dictionary<string, NamespaceUsersetExpression> namespaceConfigurations, RelationReference target)
+        //{
+        //    if(!namespaceConfigurations.TryGetValue(target.Namespace, out var namespaceUserset)) 
+        //    {
+        //        throw new InvalidOperationException($"No Namespace named '{target.Namespace}' was found");
+        //    }
 
-            if(!namespaceUserset.Relations.TryGetValue(target.Relation, out var relationUsersetExpression))
-            {
-                throw new InvalidOperationException($"Namespace '{target.Namespace}' contains no Relation '{target.Relation}'");
-            }
+        //    if(!namespaceUserset.Relations.TryGetValue(target.Relation, out var relationUsersetExpression))
+        //    {
+        //        throw new InvalidOperationException($"Namespace '{target.Namespace}' contains no Relation '{target.Relation}'");
+        //    }
 
-            return relationUsersetExpression;
-        }
+        //    return relationUsersetExpression;
+        //}
 
-        private bool IsDirectlyRelated(Dictionary<string, NamespaceUsersetExpression> namespaceConfigurations, RelationReference target, RelationReference source)
-        {
-            var relation = GetRelation(namespaceConfigurations, target);
+        //private bool IsDirectlyRelated(Dictionary<string, NamespaceUsersetExpression> namespaceConfigurations, RelationReference target, RelationReference source)
+        //{
+        //    var relation = GetRelation(namespaceConfigurations, target);
 
-            return false;
-        }
 
-        private static string ToObjectString(RelationReference rr)
-        {
-            return $"{rr.Namespace}#{rr.Relation}";
-        }
+
+        //    return false;
+        //}
+
+        //private static string ToObjectString(RelationReference rr)
+        //{
+        //    return $"{rr.Namespace}#{rr.Relation}";
+        //}
 
         #endregion Reverse Expand API
     }

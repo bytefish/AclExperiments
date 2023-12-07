@@ -1,0 +1,14 @@
+﻿{
+  "name": "doc",
+  "metadata": {
+    "relations": [
+      {
+        "name": "owner",
+        "directly_related_types": [
+          "user"
+        ]
+      }
+    ]
+  },
+
+}
