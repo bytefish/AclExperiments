@@ -153,9 +153,9 @@ namespace AclExperiments.Stores
         {
             return new AclSubjectSet
             {
-                Namespace = tuple.Namespace,
-                Object = tuple.Object,
-                Relation = tuple.Relation,
+                Namespace = tuple.SubjectNamespace,
+                Object = tuple.Subject,
+                Relation = tuple.SubjectRelation ?? "...",
             };
         }
 

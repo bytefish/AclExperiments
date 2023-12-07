@@ -8,11 +8,11 @@ namespace AclExperiments.Models
     {
         public Dictionary<string, NamespaceUsersetExpression> Namespaces { get; set; } = new();
 
-        public static TypeSystem CreateTypeSystem(List<NamespaceUsersetExpression> namespaceUsersetExpressions)
+        public static TypeSystem CreateTypeSystem(AuthorizationModel authorizationModel)
         {
             return new TypeSystem
             {
-                Namespaces = namespaceUsersetExpressions.ToDictionary(n => n.Name, n => n)
+                Namespaces = authorizationModel.Namespaces.ToDictionary(n => n.Name, n => n)
             };
         }
     }

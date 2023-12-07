@@ -30,6 +30,21 @@ namespace AclExperiments
 
         #region Check API
 
+        public async Task<bool> CheckAsync(string authorizationModelKey, string @namespace, string @object, string relation, string subject, CancellationToken cancellationToken)
+        {
+            // Get the AuthorizationModel from the database:
+            var authorizationModel = await _authorizationModelStore
+                .GetAuthorizationModelAsync(authorizationModelKey, cancellationToken)
+                .ConfigureAwait(false);
+
+            // Build the TypeSystem:
+            var typeSystem = TypeSystem.CreateTypeSystem(authorizationModel);
+
+            return await this
+                .CheckAsync(typeSystem, @namespace, @object, relation, subject, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
         public async Task<bool> CheckAsync(TypeSystem typeSystem, string @namespace, string @object, string relation, string subject, CancellationToken cancellationToken)
         {
             // Get the latest Namespace Configuration from the Store:
@@ -234,6 +249,21 @@ namespace AclExperiments
         #endregion Check API
 
         #region Expand API
+
+        public async Task<SubjectTree> ExpandAsync(string authorizationModelKey, string @namespace, string @object, string relation, int depth, CancellationToken cancellationToken)
+        {
+            // Get the AuthorizationModel from the database:
+            var authorizationModel = await _authorizationModelStore
+                .GetAuthorizationModelAsync(authorizationModelKey, cancellationToken)
+                .ConfigureAwait(false);
+
+            // Build the TypeSystem:
+            var typeSystem = TypeSystem.CreateTypeSystem(authorizationModel);
+
+            return await this
+                .ExpandAsync(typeSystem, @namespace, @object, relation, depth, cancellationToken)
+                .ConfigureAwait(false);
+        }
 
         public async Task<SubjectTree> ExpandAsync(TypeSystem typeSystem, string @namespace, string @object, string relation, int depth, CancellationToken cancellationToken)
         {
@@ -491,6 +521,23 @@ namespace AclExperiments
         #endregion Expand API
 
         #region Reverse Expand API
+
+        public async Task<List<RelationshipEdge>> ReverseExpandAsync(string authorizationModelKey, string targetNamespace, string targetRelation, string sourceNamespace, string? sourceRelation, CancellationToken cancellationToken)
+        {
+            // Get the AuthorizationModel from the database:
+            var authorizationModel = await _authorizationModelStore
+                .GetAuthorizationModelAsync(authorizationModelKey, cancellationToken)
+                .ConfigureAwait(false);
+
+            // Build the TypeSystem:
+            var typeSystem = TypeSystem.CreateTypeSystem(authorizationModel);
+
+            var result = await this
+                .ReverseExpandAsync(typeSystem, targetNamespace, targetRelation, sourceNamespace, sourceRelation, cancellationToken)
+                .ConfigureAwait(false);
+
+            return result;
+        }
 
         /// <summary>
         /// 

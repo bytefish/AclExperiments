@@ -108,6 +108,7 @@ namespace AclExperiments.Tests.Infrastructure
 
                 options
                     .EnableSensitiveDataLogging()
+                    .LogTo(Console.WriteLine)
                     .UseSqlServer(connectionString);
             });
 
