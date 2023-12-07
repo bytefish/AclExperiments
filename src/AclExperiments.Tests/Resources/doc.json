@@ -21,6 +21,10 @@
         "directly_related_types": [
           {
             "namespace": "user"
+          },
+          {
+            "namespace": "group",
+            "relation": "member"
           }
         ]
       }

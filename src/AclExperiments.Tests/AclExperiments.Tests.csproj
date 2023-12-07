@@ -13,6 +13,7 @@
     <None Remove="appsettings.json" />
     <None Remove="Resources\doc.json" />
     <None Remove="Resources\folder.json" />
+    <None Remove="Resources\group.json" />
     <None Remove="Resources\user.json" />
   </ItemGroup>
 
@@ -24,6 +25,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Resources\doc.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\group.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Resources\user.json">

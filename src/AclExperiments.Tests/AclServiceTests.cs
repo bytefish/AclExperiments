@@ -244,9 +244,8 @@ namespace AclExperiments.Tests
             // Arrange
             await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("user", 1, File.ReadAllText("Resources/user.json"), 1, default);
             await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("folder", 1, File.ReadAllText("Resources/folder.json"), 1, default);
-            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("doc", 1, File.ReadAllText("Resources/doc.json"), 1, default);            
-            
-           
+            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("doc", 1, File.ReadAllText("Resources/doc.json"), 1, default);
+            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("group", 1, File.ReadAllText("Resources/group.json"), 1, default);
 
             var aclRelations = new[]
             {
@@ -297,7 +296,7 @@ namespace AclExperiments.Tests
                 };
 
             // Act
-            var a = await _aclService.ReverseExpandAsync("doc", "viewer", "user", null, default);
+            var a = await _aclService.ReverseExpandAsync("doc", "viewer", "folder", "viewer", default);
 
             // Assert
         }

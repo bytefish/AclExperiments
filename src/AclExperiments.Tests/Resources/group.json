@@ -1,0 +1,20 @@
+﻿{
+  "name": "group",
+  "version": 1,
+  "metadata": {
+    "relations": {
+      "member": {
+        "directly_related_types": [
+          {
+            "namespace": "user"
+          }
+        ]
+      }
+    }
+  },
+  "relations": {
+    "member": {
+      "$type": "_this"
+    }
+  }
+}
