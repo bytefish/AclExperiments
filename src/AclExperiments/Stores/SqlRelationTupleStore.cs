@@ -5,6 +5,7 @@ using AclExperiments.Database.Model;
 using AclExperiments.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using System.Text.Json;
 
 namespace AclExperiments.Stores
 {
@@ -34,6 +35,58 @@ namespace AclExperiments.Stores
                 return tuples
                     .Select(ConvertToAclRelation)
                     .ToList();
+            }
+        }
+
+        public async Task<List<AclRelation>> GetRelationTuplesAsync(string@namespace, string relation,  List<AclSubject> subjects, CancellationToken cancellationToken)
+        {
+            // I am not sure, if should be proud or ashamed for this 🤭. 
+            var parameters = subjects
+                .Select(x => ExtractComponents(x))
+                .ToList();
+
+            // Serialize the Tuples to JSON.
+            var json = JsonSerializer.Serialize(parameters);
+
+            // Now execute a raw SQL using the JSON String as Parameters.
+            using (var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false))
+            {
+                var tuples = context.RelationTuples
+                    .FromSqlInterpolated(@$"
+                        WITH QuerySubjects AS (
+	                        SELECT [SubjectNamespace], [Subject], [SubjectRelation]
+	                        FROM OPENJSON(@json) WITH (
+		                        [SubjectNamespace] NVARCHAR(50) '$.SubjectNamespace',
+		                        [Subject] NVARCHAR(50) '$.Subject',
+		                        [SubjectRelation] NVARCHAR(50) '$.SubjectRelation'
+	                        )
+                        )
+                        SELECT r.*
+                        FROM [Identity].[RelationTuple] r
+	                        INNER JOIN QuerySubjects q ON r.[SubjectNamespace] = q.[SubjectNamespace] 
+		                        AND r.[Subject] = q.[Subject]
+		                        AND ((r.[SubjectRelation] = q.[SubjectRelation]) OR (r.[SubjectRelation] IS NULL AND q.[SubjectRelation] IS NULL))
+                        WHERE
+	                        r.[Namespace] = {@namespace} AND r.[Relation] = {relation}")
+                    .ToList();
+
+                return tuples
+                    .Select(ConvertToAclRelation)
+                    .ToList();
+            }
+
+        }
+
+        (string? Namespace, string Object, string? Relation) ExtractComponents(AclSubject subject)
+        {
+            switch (subject)
+            {
+                case AclSubjectId subjectId:
+                    return (null, subjectId.Id, null);
+                case AclSubjectSet subjectSet:
+                    return (subjectSet.Namespace, subjectSet.Object, subjectSet.Relation);
+                default:
+                    throw new NotImplementedException();
             }
         }
 

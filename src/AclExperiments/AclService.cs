@@ -747,6 +747,22 @@ namespace AclExperiments
             return $"{rr.Namespace}#{rr.Relation}";
         }
 
+        public void a()
+        {
+            
+            var candidateObjectsMap = new ConcurrentDictionary<string, byte>();
+        }
+
+        private record ReadTuplesQuery
+        {
+            public required string Namespace { get; set; }
+
+            public required string Relation { get; set; }
+
+            public List<AclSubject> Subjects { get; set; } = new();
+        }
+
+
         #endregion Reverse Expand API
     }
 }
