@@ -43,6 +43,12 @@ namespace AclExperiments.Stores
             // I am not sure, if should be proud or ashamed for this 🤭. 
             var parameters = subjects
                 .Select(x => ExtractComponents(x))
+                .Select(x => new
+                {
+                    SubjectNamespace = x.Namespace,
+                    Subject = x.Object,
+                    SubjectRelation = x.Relation,
+                })
                 .ToList();
 
             // Serialize the Tuples to JSON.
@@ -55,7 +61,7 @@ namespace AclExperiments.Stores
                     .FromSqlInterpolated(@$"
                         WITH QuerySubjects AS (
 	                        SELECT [SubjectNamespace], [Subject], [SubjectRelation]
-	                        FROM OPENJSON(@json) WITH (
+	                        FROM OPENJSON({json}) WITH (
 		                        [SubjectNamespace] NVARCHAR(50) '$.SubjectNamespace',
 		                        [Subject] NVARCHAR(50) '$.Subject',
 		                        [SubjectRelation] NVARCHAR(50) '$.SubjectRelation'
@@ -82,7 +88,7 @@ namespace AclExperiments.Stores
             switch (subject)
             {
                 case AclSubjectId subjectId:
-                    return (null, subjectId.Id, null);
+                    return (subjectId.Namespace, subjectId.Id, null);
                 case AclSubjectSet subjectSet:
                     return (subjectSet.Namespace, subjectSet.Object, subjectSet.Relation);
                 default:

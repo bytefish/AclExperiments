@@ -211,6 +211,73 @@ namespace AclExperiments.Tests.Stores
             Assert.AreEqual(2, results.Count);
         }
 
+        [TestMethod]
+        public async Task GetRelationTuplesAsync_MultipleSubjects()
+        {
+            // Arrange
+            var aclRelations = new[]
+            {
+                new AclRelation
+                {
+                    Object = new AclObject
+                    {
+                        Namespace = "doc",
+                        Id = "doc_1"
+                    },
+                    Relation = "owner",
+                    Subject = new AclSubjectId
+                    {
+                        Namespace = "user",
+                        Id = "user_1"
+                    }
+                },
+                new AclRelation
+                {
+                    Object = new AclObject
+                    {
+                        Namespace = "doc",
+                        Id = "doc_2"
+                    },
+                    Relation = "owner",
+                    Subject = new AclSubjectId
+                    {
+                        Namespace = "user",
+                        Id = "user_2"
+                    }
+                },
+                new AclRelation
+                {
+                    Object = new AclObject
+                    {
+                        Namespace = "folder",
+                        Id = "folder_1"
+                    },
+                    Relation = "viewer",
+                    Subject = new AclSubjectId
+                    {
+                        Namespace = "user",
+                        Id = "user_2"
+                    }
+                },
+            };
+
+            await _relationTupleStore.AddRelationTuplesAsync(aclRelations, 1, default);
+
+            var user2 = new AclSubjectId
+            {
+                Namespace = "user",
+                Id = "user_2"
+            };
+
+            // Act
+
+
+
+            var results = await _relationTupleStore.GetRelationTuplesAsync("folder", "viewer", [user2], default);
+
+            // Assert
+            Assert.AreEqual(2, results.Count);
+        }
 
         public override void RegisterServices(IServiceCollection services)
         {
