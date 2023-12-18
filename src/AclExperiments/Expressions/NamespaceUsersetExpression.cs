@@ -1,5 +1,7 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Text.Json.Serialization;
+
 namespace AclExperiments.Expressions
 {
     /// <summary>
@@ -12,11 +14,22 @@ namespace AclExperiments.Expressions
         /// <summary>
         /// Gets or sets the Namespace being configured.
         /// </summary>
+        [JsonPropertyName("name")]
         public required string Name { get; set; }
 
+        [JsonPropertyName("version")]
+        public required int Version { get; set; }
+
         /// <summary>
-        /// Gets or sets the Relations expressed by the Namespace configuration.
+        /// Gets or sets the Metadata for the Namespace.
         /// </summary>
-        public Dictionary<string, RelationUsersetExpression> Relations { get; set; } = new();
+        [JsonPropertyName("metadata")]
+        public MetadataExpression Metadata { get; set; } = new MetadataExpression();
+
+        /// <summary>
+        /// Gets or sets the Relations.
+        /// </summary>
+        [JsonPropertyName("relations")]
+        public Dictionary<string, UsersetExpression> Relations { get; set; } = new();
     }
 }

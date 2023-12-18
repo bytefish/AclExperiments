@@ -1,0 +1,1 @@
+﻿CREATE UNIQUE INDEX [UX_AuthorizationModel_ModelKey] ON [Identity].[AuthorizationModel] ([ModelKey])
