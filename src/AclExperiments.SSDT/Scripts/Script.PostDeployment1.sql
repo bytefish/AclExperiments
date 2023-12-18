@@ -23,7 +23,7 @@ GO
 :r .\Identity\pds-100-ins-identity-users.sql
 GO
 
-:r .\Identity\pds-110-ins-authorization-models.sql
+:r .\Identity\pds-110-ins-namespace-configurations.sql
 GO
 
 :r .\Identity\pds-120-ins-identity-relation-tuples.sql

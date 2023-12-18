@@ -9,12 +9,12 @@ AS BEGIN
 		ALTER TABLE [Identity].[User] SET (SYSTEM_VERSIONING = ON (HISTORY_TABLE = [Identity].[UserHistory], DATA_CONSISTENCY_CHECK = ON));
 	END
     
-	IF OBJECTPROPERTY(OBJECT_ID('[Identity].[AuthorizationModel]'), 'TableTemporalType') = 0
+	IF OBJECTPROPERTY(OBJECT_ID('[Identity].[NamespaceConfiguration]'), 'TableTemporalType') = 0
 	BEGIN
-		PRINT 'Reactivate Temporal Table for [Identity].[AuthorizationModel]'
+		PRINT 'Reactivate Temporal Table for [Identity].[NamespaceConfiguration]'
 
-		ALTER TABLE [Identity].[AuthorizationModel] ADD PERIOD FOR SYSTEM_TIME([ValidFrom], [ValidTo]);
-		ALTER TABLE [Identity].[AuthorizationModel] SET (SYSTEM_VERSIONING = ON (HISTORY_TABLE = [Identity].[AuthorizationModelHistory], DATA_CONSISTENCY_CHECK = ON));
+		ALTER TABLE [Identity].[NamespaceConfiguration] ADD PERIOD FOR SYSTEM_TIME([ValidFrom], [ValidTo]);
+		ALTER TABLE [Identity].[NamespaceConfiguration] SET (SYSTEM_VERSIONING = ON (HISTORY_TABLE = [Identity].[NamespaceConfigurationHistory], DATA_CONSISTENCY_CHECK = ON));
 	END
 
 	IF OBJECTPROPERTY(OBJECT_ID('[Identity].[RelationTuple]'), 'TableTemporalType') = 0

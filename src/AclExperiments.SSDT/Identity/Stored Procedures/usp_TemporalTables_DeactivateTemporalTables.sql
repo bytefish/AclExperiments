@@ -8,12 +8,12 @@ AS BEGIN
 		ALTER TABLE [Identity].[User] DROP PERIOD FOR SYSTEM_TIME;
 	END
 
-    IF OBJECTPROPERTY(OBJECT_ID('[Identity].[AuthorizationModel]'), 'TableTemporalType') = 2
+    IF OBJECTPROPERTY(OBJECT_ID('[Identity].[NamespaceConfiguration]'), 'TableTemporalType') = 2
 	BEGIN
-		PRINT 'Deactivate Temporal Table for [Identity].[[AuthorizationModel]'
+		PRINT 'Deactivate Temporal Table for [Identity].[[NamespaceConfiguration]'
 
-		ALTER TABLE [Identity].[AuthorizationModel] SET (SYSTEM_VERSIONING = OFF);
-		ALTER TABLE [Identity].[AuthorizationModel] DROP PERIOD FOR SYSTEM_TIME;
+		ALTER TABLE [Identity].[NamespaceConfiguration] SET (SYSTEM_VERSIONING = OFF);
+		ALTER TABLE [Identity].[NamespaceConfiguration] DROP PERIOD FOR SYSTEM_TIME;
 	END
 
 

@@ -1,97 +1,53 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using AclExperiments.Database;
+using AclExperiments.Database.Connections;
+using AclExperiments.Database.Extensions;
 using AclExperiments.Database.Model;
+using AclExperiments.Database.Query;
 using AclExperiments.Models;
-using Microsoft.EntityFrameworkCore;
+using AclExperiments.Utils;
+using Microsoft.Data.SqlClient.Server;
 using System.Data;
-using System.Text.Json;
+using System.Data.Common;
 
 namespace AclExperiments.Stores
 {
     public class SqlRelationTupleStore : IRelationTupleStore
     {
-        private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
+        private readonly ISqlConnectionFactory _sqlConnectionFactory;
 
-        public SqlRelationTupleStore(IDbContextFactory<ApplicationDbContext> dbContextFactory)
+        public SqlRelationTupleStore(ISqlConnectionFactory sqlConnectionFactory)
         {
-            _dbContextFactory = dbContextFactory;
+            _sqlConnectionFactory = sqlConnectionFactory;
         }
 
         public async Task<List<AclRelation>> GetRelationTuplesAsync(RelationTupleQuery relationTupleQuery, CancellationToken cancellationToken)
         {
-            using (var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false))
+            using (var connection = await _sqlConnectionFactory.GetDbConnectionAsync(cancellationToken).ConfigureAwait(false))
             {
-                var tuples = await context.RelationTuples
-                    .AsNoTracking()
-                    .Where(x => (relationTupleQuery.Namespace == null || x.Namespace == relationTupleQuery.Namespace)
-                        && (relationTupleQuery.Object == null || x.Object == relationTupleQuery.Object)
-                        && (relationTupleQuery.Relation == null || x.Relation == relationTupleQuery.Relation)
-                        && (relationTupleQuery.SubjectNamespace  == null | x.SubjectNamespace == relationTupleQuery.SubjectNamespace)
-                        && (relationTupleQuery.Subject == null || x.Subject == relationTupleQuery.Subject)
-                        && (relationTupleQuery.SubjectRelation == null || x.SubjectRelation == relationTupleQuery.SubjectRelation))
-                    .ToListAsync(cancellationToken).ConfigureAwait(false);
+                var query = new SqlQuery(connection).Proc("[Identity].[usp_RelationTuple_GetRelationTuples]")
+                    .Param("Namespace", relationTupleQuery.Namespace)
+                    .Param("Object", relationTupleQuery.Object)
+                    .Param("Relation", relationTupleQuery.Relation)
+                    .Param("SubjectNamespace", relationTupleQuery.SubjectNamespace)
+                    .Param("Subject", relationTupleQuery.Subject)
+                    .Param("SubjectRelation", relationTupleQuery.SubjectRelation);
 
-                return tuples
-                    .Select(ConvertToAclRelation)
-                    .ToList();
-            }
-        }
+                var tuples = new List<SqlRelationTuple>();
 
-        public async Task<List<AclRelation>> GetRelationsByObjectNamespaceAsync(string@namespace, string relation,  List<AclSubject> subjects, CancellationToken cancellationToken)
-        {
-            // I am not sure, if should be proud or ashamed for this 🤭. 
-            var parameters = subjects
-                .Select(x => ExtractComponents(x))
-                .Select(x => new
+                using (var reader = await query.ExecuteDataReaderAsync(cancellationToken).ConfigureAwait(false))
                 {
-                    SubjectNamespace = x.Namespace,
-                    Subject = x.Object,
-                    SubjectRelation = x.Relation,
-                })
-                .ToList();
+                    while (await reader.ReadAsync().ConfigureAwait(false))
+                    {
+                        var tuple = MapToObject(reader);
 
-            // Serialize the Tuples to JSON.
-            var json = JsonSerializer.Serialize(parameters);
-
-            // Now execute a raw SQL using the JSON String as Parameters.
-            using (var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false))
-            {
-                var tuples = context.RelationTuples
-                    .FromSqlInterpolated(@$"
-                        WITH QuerySubjects AS (
-	                        SELECT [SubjectNamespace], [Subject], [SubjectRelation]
-	                        FROM OPENJSON({json}) WITH (
-		                        [SubjectNamespace] NVARCHAR(50) '$.SubjectNamespace',
-		                        [Subject] NVARCHAR(50) '$.Subject',
-		                        [SubjectRelation] NVARCHAR(50) '$.SubjectRelation'
-	                        )
-                        )
-                        SELECT r.*
-                        FROM [Identity].[RelationTuple] r
-	                        INNER JOIN QuerySubjects q ON r.[SubjectNamespace] = q.[SubjectNamespace] 
-		                        AND r.[Subject] = q.[Subject]
-		                        AND ((r.[SubjectRelation] = q.[SubjectRelation]) OR (r.[SubjectRelation] IS NULL AND q.[SubjectRelation] IS NULL))
-                        WHERE
-	                        r.[Namespace] = {@namespace} AND r.[Relation] = {relation}")
-                    .ToList();
+                        tuples.Add(tuple);
+                    }
+                }
 
                 return tuples
-                    .Select(ConvertToAclRelation)
+                    .Select(tuple => ConvertToAclRelation(tuple))
                     .ToList();
-            }
-        }
-
-        (string? Namespace, string Object, string? Relation) ExtractComponents(AclSubject subject)
-        {
-            switch (subject)
-            {
-                case AclSubjectId subjectId:
-                    return (subjectId.Namespace, subjectId.Id, null);
-                case AclSubjectSet subjectSet:
-                    return (subjectSet.Namespace, subjectSet.Object, subjectSet.Relation);
-                default:
-                    throw new NotImplementedException();
             }
         }
 
@@ -105,116 +61,108 @@ namespace AclExperiments.Stores
                     return GetRelationTuplesRowCountAsync(@object, relation, subjectSet, cancellationToken);
                 default:
                     throw new NotImplementedException();
+
             }
         }
 
         private async Task<int> GetRelationTuplesRowCountAsync(AclObject @object, string relation, AclSubjectId subjectId, CancellationToken cancellationToken)
         {
-
-            using(var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false))
+            using (var connection = await _sqlConnectionFactory.GetDbConnectionAsync(cancellationToken))
             {
-                int tuplesCount = await context.RelationTuples
-                    .AsNoTracking()
-                    .Where(x => x.Namespace == @object.Namespace
-                        && x.Object == @object.Id
-                        && x.Relation == relation
-                        && x.Subject == subjectId.Id)
-                    .CountAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                var query = new SqlQuery(connection).Proc("[Identity].[usp_RelationTuple_GetRowCount]")
+                    .Param("Namespace", @object.Namespace)
+                    .Param("Object", @object.Id)
+                    .Param("Relation", relation)
+                    .Param("SubjectNamespace", subjectId.Namespace)
+                    .Param("Subject", subjectId.Id)
+                    .Param("SubjectRelation", null)
+                    .OutParam("RowCount", SqlDbType.Int);
 
-                return tuplesCount;
+                await query.ExecuteNonQueryAsync(cancellationToken);
+
+                return query.GetOutParam<int>("RowCount");
             }
         }
+
 
         private async Task<int> GetRelationTuplesRowCountAsync(AclObject @object, string relation, AclSubjectSet subjectSet, CancellationToken cancellationToken)
         {
-            using (var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false))
+            using (var connection = await _sqlConnectionFactory.GetDbConnectionAsync(cancellationToken))
             {
-                int tuplesCount = await context.RelationTuples
-                    .AsNoTracking()
-                    .Where(x => x.Namespace == @object.Namespace
-                        && x.Object == @object.Id
-                        && x.Relation == relation
-                        && x.SubjectNamespace == subjectSet.Namespace
-                        && x.Subject == subjectSet.Object
-                        && x.SubjectRelation == subjectSet.Relation)
-                    .CountAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                var query = new SqlQuery(connection).Proc("[Identity].[usp_RelationTuple_GetRowCount]")
+                    .Param("Namespace", @object.Namespace)
+                    .Param("Object", @object.Id)
+                    .Param("Relation", relation)
+                    .Param("SubjectNamespace", subjectSet.Namespace)
+                    .Param("Subject", subjectSet.Object)
+                    .Param("SubjectRelation", subjectSet.Relation)
+                    .OutParam("RowCount", SqlDbType.Int);
 
-                return tuplesCount;
+                await query.ExecuteNonQueryAsync(cancellationToken);
 
+                return query.GetOutParam<int>("RowCount");
             }
         }
 
-        public async Task<List<AclSubjectSet>> GetSubjectSetsByObjectAsync(AclObject @object, string relation, CancellationToken cancellationToken)
+        public async Task<List<AclSubjectSet>> GetSubjectSetsForObjectAsync(AclObject @object, string relation, CancellationToken cancellationToken)
         {
-            using (var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false))
+            using (var connection = await _sqlConnectionFactory.GetDbConnectionAsync(cancellationToken).ConfigureAwait(false))
             {
-                var tuples = await context.RelationTuples
-                    .AsNoTracking()
-                    .Where(x => x.Namespace == @object.Namespace
-                        && x.Object == @object.Id
-                        && x.Relation == relation
-                        && x.SubjectNamespace != null
-                        && x.Subject != null
-                        && x.SubjectRelation != null)
-                    .ToListAsync(cancellationToken).ConfigureAwait(false);
+                var query = new SqlQuery(connection).Proc("[Identity].[usp_RelationTuple_GetSubjectSets]")
+                    .Param("Namespace", @object.Namespace)
+                    .Param("Object", @object.Id)
+                    .Param("Relation", relation);
 
-                return tuples.Select(GetSubjectSet).ToList();
+                var tuples = new List<SqlRelationTuple>();
+
+                using (var reader = await query.ExecuteDataReaderAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    while (await reader.ReadAsync().ConfigureAwait(false))
+                    {
+                        var tuple = MapToObject(reader);
+
+                        tuples.Add(tuple);
+                    }
+                }
+
+                return tuples.Select(x => new AclSubjectSet
+                {
+                    Namespace = x.SubjectNamespace,
+                    Object = x.Subject,
+                    Relation = x.SubjectRelation ?? "..." // TODO This looks... problematic?
+                }).ToList();
             }
         }
 
         public async Task AddRelationTuplesAsync(ICollection<AclRelation> aclRelations, int userId, CancellationToken cancellationToken)
         {
-            var tuples = aclRelations
+            var sqlRelationTuples = aclRelations
                 .Select(aclRelation => ConvertToSqlRelationTuple(aclRelation, userId))
                 .ToList();
 
-            using (var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false))
+            using (var connection = await _sqlConnectionFactory.GetDbConnectionAsync(cancellationToken).ConfigureAwait(false))
             {
-                // Yes, inefficient. Don't care for now ...
-                await context
-                    .AddRangeAsync(tuples, cancellationToken)
-                    .ConfigureAwait(false);
-
-                await context
-                    .SaveChangesAsync(cancellationToken)
+                await new SqlQuery(connection).Proc("[Identity].[usp_RelationTuple_BulkInsert]")
+                    .Tvp("RelationTuples", "[Identity].[udt_RelationTupleType]", ToSqlDataRecords(sqlRelationTuples))
+                    .ExecuteNonQueryAsync(cancellationToken)
                     .ConfigureAwait(false);
             }
         }
 
         public async Task RemoveRelationTuplesAsync(ICollection<AclRelation> aclRelations, int userId, CancellationToken cancellationToken)
         {
-            var tuples = aclRelations
+            // usp_RelationTuple_BulkDelete
+            var sqlRelationTuples = aclRelations
                 .Select(aclRelation => ConvertToSqlRelationTuple(aclRelation, userId))
                 .ToList();
 
-            using (var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false))
+            using (var connection = await _sqlConnectionFactory.GetDbConnectionAsync(cancellationToken).ConfigureAwait(false))
             {
-                // Yes, inefficient. Don't care for now ...
-                foreach(var tuple in tuples)
-                {
-                    await context.RelationTuples
-                        .Where(t => t.Namespace == tuple.Namespace
-                            && t.Object == tuple.Object
-                            && t.Relation == tuple.Relation
-                            && t.SubjectNamespace == tuple.SubjectNamespace
-                            && t.Subject == tuple.Subject
-                            && t.SubjectRelation == tuple.SubjectRelation)
-                        .ExecuteDeleteAsync(cancellationToken)
-                        .ConfigureAwait(false);
-                }
+                await new SqlQuery(connection).Proc("[Identity].[usp_RelationTuple_BulkDelete]")
+                    .Tvp("RelationTuples", "[Identity].[udt_RelationTupleType]", ToSqlDataRecords(sqlRelationTuples))
+                    .ExecuteNonQueryAsync(cancellationToken)
+                    .ConfigureAwait(false);
             }
-        }
-
-        private static AclSubjectSet GetSubjectSet(SqlRelationTuple tuple)
-        {
-            return new AclSubjectSet
-            {
-                Namespace = tuple.SubjectNamespace,
-                Object = tuple.Subject,
-                Relation = tuple.SubjectRelation ?? "...",
-            };
         }
 
         private static AclRelation ConvertToAclRelation(SqlRelationTuple sqlRelationTuple)
@@ -296,6 +244,57 @@ namespace AclExperiments.Stores
                 SubjectRelation = subjectSet.Relation,
                 LastEditedBy = userId
             };
+        }
+
+        private static SqlRelationTuple MapToObject(DbDataReader source)
+        {
+            return new SqlRelationTuple
+            {
+                Id = source.GetInt32("RelationTupleID"),
+                Namespace = source.GetString("Namespace"),
+                Object = source.GetString("Object"),
+                Relation = source.GetString("Relation"),
+                SubjectNamespace = source.GetString("SubjectNamespace"),
+                Subject = source.GetString("Subject"),
+                SubjectRelation = source.GetNullableString("SubjectRelation"),
+                LastEditedBy = source.GetInt32("LastEditedBy"),
+                RowVersion = source.GetByteArray("RowVersion"),
+                ValidFrom = source.GetNullableDateTime("ValidFrom"),
+                ValidTo = source.GetNullableDateTime("ValidTo")
+            };
+        }
+
+        private static IEnumerable<SqlDataRecord> ToSqlDataRecords(IEnumerable<SqlRelationTuple> tuples)
+        {
+            SqlDataRecord sdr = new SqlDataRecord(
+                new SqlMetaData("RelationTupleID", SqlDbType.Int),
+                new SqlMetaData("Namespace", SqlDbType.NVarChar, 50),
+                new SqlMetaData("Object", SqlDbType.NVarChar, 50),
+                new SqlMetaData("Relation", SqlDbType.NVarChar, 50),
+                new SqlMetaData("SubjectNamespace", SqlDbType.NVarChar, 50),
+                new SqlMetaData("Subject", SqlDbType.NVarChar, 50),
+                new SqlMetaData("SubjectRelation", SqlDbType.NVarChar, 50),
+                new SqlMetaData("RowVersion", SqlDbType.VarBinary, 8),
+                new SqlMetaData("LastEditedBy", SqlDbType.Int),
+                new SqlMetaData("ValidFrom", SqlDbType.DateTime2),
+                new SqlMetaData("ValidTo", SqlDbType.DateTime2));
+
+            foreach (var tuple in tuples)
+            {
+                sdr.SetNullableInt32(0, tuple.Id);
+                sdr.SetString(1, tuple.Namespace);
+                sdr.SetString(2, tuple.Object);
+                sdr.SetString(3, tuple.Relation);
+                sdr.SetString(4, tuple.SubjectNamespace);
+                sdr.SetString(5, tuple.Subject);
+                sdr.SetNullableString(6, tuple.SubjectRelation);
+                sdr.SetNullableBytes(7, tuple.RowVersion);
+                sdr.SetInt32(8, tuple.LastEditedBy);
+                sdr.SetNullableDateTime(9, tuple.ValidFrom);
+                sdr.SetNullableDateTime(10, tuple.ValidTo);
+
+                yield return sdr;
+            }
         }
     }
 }

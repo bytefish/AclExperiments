@@ -5,22 +5,17 @@ namespace AclExperiments.Database.Model
     /// <summary>
     /// A Namespace Configuration in the Google Zanzibar language format.
     /// </summary>
-    public class SqlAuthorizationModel : SqlEntity
+    public class SqlNamespaceConfiguration : SqlEntity
     {
-        /// <summary>
-        /// Gets or sets a unique identifier for the model.
-        /// </summary>
-        public required string ModelKey { get; set; }
-
         /// <summary>
         /// Gets or sets the Name.
         /// </summary>
         public required string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the Version.
         /// </summary>
-        public required string Description { get; set; }
+        public required int Version { get; set; }
 
         /// <summary>
         /// Gets or sets the Content.

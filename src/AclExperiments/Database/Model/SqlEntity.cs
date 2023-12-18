@@ -2,9 +2,6 @@
 
 namespace AclExperiments.Database.Model
 {
-    /// <summary>
-    /// Base Class for all Database Entities.
-    /// </summary>
     public abstract class SqlEntity
     {
         /// <summary>

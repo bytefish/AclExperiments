@@ -1,7 +1,7 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using AclExperiments.Database;
-using Microsoft.EntityFrameworkCore;
+using AclExperiments.Database.Connections;
+using AclExperiments.Database.Query;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -22,11 +22,6 @@ namespace AclExperiments.Tests.Infrastructure
         /// Shared Services for all tests.
         /// </summary>
         protected readonly IServiceProvider _services;
-
-        /// <summary>
-        /// Shared DbContext Factory.
-        /// </summary>
-        protected  IDbContextFactory<ApplicationDbContext> _dbContextFactory = null!;
 
         /// <summary>
         /// Constructor.
@@ -57,12 +52,12 @@ namespace AclExperiments.Tests.Infrastructure
         {
             await OnSetupBeforeCleanupAsync();
 
-            _dbContextFactory = _services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
-
-            using (var context = await _dbContextFactory.CreateDbContextAsync(default).ConfigureAwait(false))
+            using (var connection = await _services.GetRequiredService<ISqlConnectionFactory>()
+                .GetDbConnectionAsync(default)
+                .ConfigureAwait(false))
             {
-                await context.Database
-                    .ExecuteSqlRawAsync("EXEC [Identity].[usp_Database_ResetForTests]")
+                await new SqlQuery(connection).Proc("[Identity].[usp_Database_ResetForTests]")
+                    .ExecuteNonQueryAsync(default)
                     .ConfigureAwait(false);
             }
             
@@ -96,21 +91,6 @@ namespace AclExperiments.Tests.Infrastructure
         private IServiceProvider BuildServices(IConfiguration configuration)
         {
             var services = new ServiceCollection();
-
-            services.AddDbContextFactory<ApplicationDbContext>(options =>
-            {
-                var connectionString = _configuration.GetConnectionString("ApplicationDatabase");
-
-                if (connectionString == null)
-                {
-                    throw new InvalidOperationException($"No Connection String named 'ApplicationDatabase' found in appsettings.json");
-                }
-
-                options
-                    .EnableSensitiveDataLogging()
-                    .LogTo(Console.WriteLine)
-                    .UseSqlServer(connectionString);
-            });
 
             services.AddLogging();
 

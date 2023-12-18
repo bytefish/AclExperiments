@@ -1,9 +1,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using AclExperiments.Database.Model;
+using AclExperiments.Database.Connections;
 using AclExperiments.Models;
 using AclExperiments.Stores;
 using AclExperiments.Tests.Infrastructure;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -14,22 +15,34 @@ namespace AclExperiments.Tests
     {
         private AclService _aclService = null!;
 
-        private IAuthorizationModelStore _authorizationModelStore = null!;
+        private INamespaceConfigurationStore _namespaceConfigurationStore = null!;
         private IRelationTupleStore _relationTupleStore = null!;
 
         protected override Task OnSetupBeforeCleanupAsync()
         {
             _aclService = _services.GetRequiredService<AclService>();
             _relationTupleStore = _services.GetRequiredService<IRelationTupleStore>();
-            _authorizationModelStore = _services.GetRequiredService<IAuthorizationModelStore>();
+            _namespaceConfigurationStore = _services.GetRequiredService<INamespaceConfigurationStore>();
 
             return Task.CompletedTask;
         }
 
         public override void RegisterServices(IServiceCollection services)
         {
+            services.AddSingleton<ISqlConnectionFactory>((sp) =>
+            {
+                var connectionString = _configuration.GetConnectionString("ApplicationDatabase");
+
+                if (connectionString == null)
+                {
+                    throw new InvalidOperationException($"No Connection String named 'ApplicationDatabase' found in appsettings.json");
+                }
+
+                return new SqlServerConnectionFactory(connectionString);
+            });
+
             services.AddSingleton<AclService>();
-            services.AddSingleton<IAuthorizationModelStore, SqlAuthorizationModelStore>();
+            services.AddSingleton<INamespaceConfigurationStore, SqlNamespaceConfigurationStore>();
             services.AddSingleton<IRelationTupleStore, SqlRelationTupleStore>();
         }
 
@@ -53,20 +66,8 @@ namespace AclExperiments.Tests
         public async Task CheckAsync_CheckUserPermissions()
         {
             // Arrange
-            var authorizationModel = new SqlAuthorizationModel
-            {
-                ModelKey = "google-drive",
-                Name = "Google Drive",
-                Description = "An Authorization Model for Google Drive",
-                Content = File.ReadAllText("Resources/google-drive.json"),
-                LastEditedBy = 1
-            };
-
-            using (var context = _dbContextFactory.CreateDbContext())
-            {
-                await context.AddAsync(authorizationModel, default);
-                await context.SaveChangesAsync(default);
-            }
+            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("doc", 1, File.ReadAllText("Resources/doc.nsconfig"), 1, default);
+            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("folder", 1, File.ReadAllText("Resources/folder.nsconfig"), 1, default);
 
             var aclRelations = new[]
             {
@@ -119,9 +120,9 @@ namespace AclExperiments.Tests
             await _relationTupleStore.AddRelationTuplesAsync(aclRelations, 1, default);
 
             // Act
-            var user_1_is_permitted = await _aclService.CheckAsync("google-drive", "doc", "doc_1", "viewer", "user:user_1", default);
-            var user_2_is_permitted = await _aclService.CheckAsync("google-drive", "doc", "doc_1", "viewer", "user:user_2", default);
-            var user_3_is_permitted = await _aclService.CheckAsync("google-drive", "doc", "doc_1", "viewer", "user:user_3", default);
+            var user_1_is_permitted = await _aclService.CheckAsync("doc", "doc_1", "viewer", "user:user_1", default);
+            var user_2_is_permitted = await _aclService.CheckAsync("doc", "doc_1", "viewer", "user:user_2", default);            
+            var user_3_is_permitted = await _aclService.CheckAsync("doc", "doc_1", "viewer", "user:user_3", default);            
 
             // Assert
             Assert.AreEqual(true, user_1_is_permitted);
@@ -151,20 +152,8 @@ namespace AclExperiments.Tests
         public async Task Expand_ExpandUsersetRewrites()
         {
             // Arrange
-            var authorizationModel = new SqlAuthorizationModel
-            {
-                ModelKey = "google-drive",
-                Name = "Google Drive",
-                Description = "An Authorization Model for Google Drive",
-                Content = File.ReadAllText("Resources/google-drive.json"),
-                LastEditedBy = 1
-            };
-
-            using (var context = _dbContextFactory.CreateDbContext())
-            {
-                await context.AddAsync(authorizationModel, default);
-                await context.SaveChangesAsync(default);
-            }
+            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("doc", 1, File.ReadAllText("Resources/doc.nsconfig"), 1, default);
+            await _namespaceConfigurationStore.AddNamespaceConfigurationAsync("folder", 1, File.ReadAllText("Resources/folder.nsconfig"), 1, default);
 
             var aclRelations = new[]
             {
@@ -217,7 +206,7 @@ namespace AclExperiments.Tests
             await _relationTupleStore.AddRelationTuplesAsync(aclRelations, 1, default);
 
             // Act
-            var subjectTree = await _aclService.ExpandAsync("google-drive", "doc", "doc_1", "viewer", 100, default);
+            var subjectTree = await _aclService.ExpandAsync("doc", "doc_1", "viewer", 100, default);
 
             // Assert
             Assert.AreEqual(2, subjectTree.Result.Count);
@@ -232,6 +221,5 @@ namespace AclExperiments.Tests
         }
 
         #endregion Expand API
-
     }
 }

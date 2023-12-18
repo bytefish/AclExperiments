@@ -7,23 +7,13 @@ namespace AclExperiments.Stores
     public interface IRelationTupleStore
     {
         /// <summary>
-        /// Get Objects by Subjects and Types.
-        /// </summary>
-        /// <param name="namespace">The target objects Namespace</param>
-        /// <param name="relation">The target objects relation</param>
-        /// <param name="subjects">A List of Subjects to query</param>
-        /// <param name="cancellationToken">CancellationToken to cancel asynchronous processing</param>
-        /// <returns>List of Relations</returns>
-        Task<List<AclRelation>> GetRelationsByObjectNamespaceAsync(string @namespace, string relation, List<AclSubject> subjects, CancellationToken cancellationToken);
-
-        /// <summary>
         /// Returns all SubjectSets for a given <see cref="AclObject"/> and Relation.
         /// </summary>
         /// <param name="aclObject">Object</param>
         /// <param name="relation">Relation between Object and SubjectSets</param>
         /// <param name="cancellationToken">CancellationToken to cancel asynchronous processing</param>
         /// <returns>An awaitable Task for SubjectSets</returns>
-        Task<List<AclSubjectSet>> GetSubjectSetsByObjectAsync(AclObject aclObject, string relation, CancellationToken cancellationToken);
+        Task<List<AclSubjectSet>> GetSubjectSetsForObjectAsync(AclObject aclObject, string relation, CancellationToken cancellationToken);
 
         /// <summary>
         /// For a direct check, we only need to know, if there is a matching row in the store.

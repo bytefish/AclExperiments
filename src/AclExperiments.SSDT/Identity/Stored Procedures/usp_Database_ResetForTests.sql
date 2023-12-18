@@ -6,7 +6,7 @@ AS BEGIN
     EXECUTE [Identity].[usp_TemporalTables_DeactivateTemporalTables];
 
     EXEC(N'DELETE FROM [Identity].[RelationTuple]');
-    EXEC(N'DELETE FROM [Identity].[AuthorizationModel]');
+    EXEC(N'DELETE FROM [Identity].[NamespaceConfiguration]');
 
     EXECUTE [Identity].[usp_TemporalTables_ReactivateTemporalTables];
 
