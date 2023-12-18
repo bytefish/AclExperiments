@@ -5,11 +5,7 @@ using AclExperiments.Models;
 using AclExperiments.Stores;
 using AclExperiments.Utils;
 using Microsoft.Extensions.Logging;
-using Microsoft.Identity.Client;
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace AclExperiments
 {
@@ -520,5 +516,207 @@ namespace AclExperiments
         }
 
         #endregion Expand API
+
+
+        #region Graph
+
+        private List<RelationshipEdge> GetRelationshipEdges(TypeSystem typeSystem, RelationReference target, RelationReference source, ConcurrentDictionary<string, byte> visited)
+        {
+            var key = ToObjectString(target);
+
+            if (!visited.TryAdd(key, byte.MinValue))
+            {
+                return [];
+            }
+
+            var rewrite = typeSystem.GetRelation(target.Namespace, target.Relation!);
+
+            return GetRelationshipEdgesWithTargetRewrite(
+                typeSystem,
+                target,
+                source,
+                rewrite,
+                visited);
+        }
+
+        private List<RelationshipEdge> GetRelationshipEdgesWithTargetRewrite(TypeSystem typeSystem, RelationReference target, RelationReference source, UsersetExpression rewrite, ConcurrentDictionary<string, byte> visited)
+        {
+            switch (rewrite)
+            {
+                case ThisUsersetExpression thisUsersetExpression:
+                    return GetRelationshipEdgesWithTargetRewrite_This(typeSystem, target, source, visited);
+                case ComputedUsersetExpression computedUsersetExpression:
+                    return GetRelationshipEdgesWithTargetRewrite_ComputedUserset(typeSystem, target, source, computedUsersetExpression, visited); ;
+                case TupleToUsersetExpression tupleToUsersetExpression:
+                    return GetRelationshipEdgesWithTargetRewrite_TupleToUserset(typeSystem, target, source, tupleToUsersetExpression, visited); ;
+                case SetOperationUsersetExpression setOperationUsersetExpression:
+                    return GetRelationshipEdgesWithTargetRewrite_SetOperation(typeSystem, target, source, setOperationUsersetExpression, visited); ;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        private List<RelationshipEdge> GetRelationshipEdgesWithTargetRewrite_This(TypeSystem typeSystem, RelationReference target, RelationReference source, ConcurrentDictionary<string, byte> visited)
+        {
+            var res = new List<RelationshipEdge>();
+
+            bool isDirectlyRelated = typeSystem.IsDirectlyRelated(target, source);
+
+            if (isDirectlyRelated)
+            {
+                var edge = new RelationshipEdge
+                {
+                    RelationEdgeType = RelationEdgeTypeEnum.DirectEdge,
+                    TargetReference = target,
+                    TargetIsIntersectionOrExclusion = false
+                };
+
+                res.Add(edge);
+            }
+
+            var directlyRelatedTypes = typeSystem.GetDirectlyRelatedTypes(target.Namespace, target.Relation!);
+
+            foreach (var directlyRelatedType in directlyRelatedTypes)
+            {
+                if (directlyRelatedType.Relation != null)
+                {
+                    var directRelationReference = new RelationReference
+                    {
+                        Namespace = directlyRelatedType.Namespace,
+                        Relation = directlyRelatedType.Relation
+                    };
+
+                    var edges = GetRelationshipEdges(typeSystem, directRelationReference, source, visited);
+
+                    res.AddRange(edges);
+                }
+            }
+
+            return res;
+        }
+
+        private List<RelationshipEdge> GetRelationshipEdgesWithTargetRewrite_ComputedUserset(TypeSystem typeSystem, RelationReference target, RelationReference source, ComputedUsersetExpression computedUsersetExpression, ConcurrentDictionary<string, byte> visited)
+        {
+            var res = new List<RelationshipEdge>();
+
+            var sourceMatchesRewritten = target.Namespace == source.Namespace && computedUsersetExpression.Relation == source.Relation;
+
+            if (sourceMatchesRewritten)
+            {
+                var targetReference = new RelationReference
+                {
+                    Namespace = target.Namespace,
+                    Relation = target.Relation
+                };
+
+                var computedRelationshipEdge = new RelationshipEdge
+                {
+                    RelationEdgeType = RelationEdgeTypeEnum.ComputedUserset,
+                    TargetReference = targetReference,
+                    TargetIsIntersectionOrExclusion = false,
+                };
+
+                res.Add(computedRelationshipEdge);
+            }
+
+            if (computedUsersetExpression.Relation != null)
+            {
+                var computedTargetReference = new RelationReference
+                {
+                    Namespace = target.Namespace,
+                    Relation = computedUsersetExpression.Relation
+                };
+
+                var computedTargetEdges = GetRelationshipEdges(typeSystem, computedTargetReference, source, visited);
+
+                res.AddRange(computedTargetEdges);
+            }
+
+            return res;
+        }
+
+        private List<RelationshipEdge> GetRelationshipEdgesWithTargetRewrite_TupleToUserset(TypeSystem typeSystem, RelationReference target, RelationReference source, TupleToUsersetExpression tupleToUsersetExpression, ConcurrentDictionary<string, byte> visited)
+        {
+            var res = new List<RelationshipEdge>();
+
+            var directlyRelatedTypes = typeSystem.GetDirectlyRelatedTypes(target.Namespace, tupleToUsersetExpression.TuplesetExpression.Relation);
+
+            foreach (var directlyRelatedType in directlyRelatedTypes)
+            {
+                if (directlyRelatedType.Namespace == source.Namespace && tupleToUsersetExpression.ComputedUsersetExpression.Relation == source.Relation)
+                {
+                    // TODO Intersections...
+                    var targetRelationReference = new RelationReference
+                    {
+                        Namespace = target.Namespace,
+                        Relation = target.Relation
+                    };
+
+                    var targetIsIntersectionOrExclusion = false;
+
+                    var targetRelationshipEdge = new RelationshipEdge
+                    {
+                        RelationEdgeType = RelationEdgeTypeEnum.TupleToUserset,
+                        TargetReference = targetRelationReference,
+                        TuplesetRelation = tupleToUsersetExpression.TuplesetExpression.Relation,
+                        TargetIsIntersectionOrExclusion = targetIsIntersectionOrExclusion
+                    };
+
+                    res.Add(targetRelationshipEdge);
+                }
+
+                var directlyRelatedTypeReference = new RelationReference
+                {
+                    Namespace = directlyRelatedType.Namespace,
+                    Relation = tupleToUsersetExpression.ComputedUsersetExpression.Relation
+                };
+
+                var subResults = GetRelationshipEdges(typeSystem, directlyRelatedTypeReference, source, visited);
+
+                res.AddRange(subResults);
+            }
+
+            return res;
+        }
+
+        private List<RelationshipEdge> GetRelationshipEdgesWithTargetRewrite_SetOperation(TypeSystem typeSystem, RelationReference target, RelationReference source, SetOperationUsersetExpression setOperationUsersetExpression, ConcurrentDictionary<string, byte> visited)
+        {
+            var res = new List<RelationshipEdge>();
+
+            switch (setOperationUsersetExpression.Operation)
+            {
+                case SetOperationEnum.Union:
+
+                    foreach (var child in setOperationUsersetExpression.Children)
+                    {
+                        var childResults = GetRelationshipEdgesWithTargetRewrite(typeSystem, target, source, child, visited);
+
+                        res.AddRange(childResults);
+                    }
+                    break;
+
+                default:
+                    throw new NotImplementedException($"No Implementation for Set Operator '{setOperationUsersetExpression.Operation}' yet");
+            }
+
+            return res;
+        }
+
+        private static string ToObjectString(RelationReference rr)
+        {
+            return $"{rr.Namespace}#{rr.Relation}";
+        }
+
+        private record ReadTuplesQuery
+        {
+            public required string Namespace { get; set; }
+
+            public required string Relation { get; set; }
+
+            public List<AclSubject> Subjects { get; set; } = new();
+        }
+
+
+        #endregion Graph
     }
 }
